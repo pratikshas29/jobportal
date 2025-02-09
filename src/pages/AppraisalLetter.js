@@ -9,13 +9,10 @@ import "../assets/styles/AppraisalLetter.css";
 function AppraisalLetter() {
   const containerRef = React.useRef(null);
   const [formData, setFormData] = useState({
-    employeeName: " ",
+    employeeName: "",
     date: "",
-    basic: "",
-    da: "",
-    conveyance: "",
-    other: "",
-    total: "",
+    lpa: "", // Only input needed for salary
+    // Other fields will be calculated automatically
     // Company Details
     companyName: "MYCLAN SERVICES PRIVATE LIMITED",
     companyAddressLine1: "Office No -309, 3rd Floor",
@@ -29,12 +26,80 @@ function AppraisalLetter() {
     companyWebsite: "www.myclanservices.co.in"
   });
 
+  // Convert number to words
+  const numberToWords = (num) => {
+    const single = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+    const double = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+    const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+    const formatTens = (num) => {
+      if (num < 10) return single[num];
+      if (num < 20) return double[num - 10];
+      return tens[Math.floor(num / 10)] + (num % 10 ? " " + single[num % 10] : "");
+    };
+    
+    if (num === 0) return "Zero";
+    const convert = (num) => {
+      if (num < 100) return formatTens(num);
+      if (num < 1000) return single[Math.floor(num / 100)] + " Hundred" + (num % 100 ? " and " + formatTens(num % 100) : "");
+      if (num < 100000) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
+      if (num < 10000000) return convert(Math.floor(num / 100000)) + " Lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
+      return convert(Math.floor(num / 10000000)) + " Crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
+    };
+    return convert(Math.round(num));
+  };
+
+  // Calculate salary components based on LPA
+  const calculateSalaryComponents = (lpa) => {
+    const annualSalary = parseFloat(lpa) * 100000;
+    
+    // Standard Indian salary structure
+    const basic = Math.round(annualSalary * 0.40); // 40% of CTC
+    const hra = Math.round(basic * 0.50); // 50% of Basic
+    const da = Math.round(annualSalary * 0.10); // 10% of CTC
+    const conveyance = 19200; // Standard yearly conveyance
+    const medical = 15000; // Standard medical allowance
+    const special = annualSalary - (basic + hra + da + conveyance + medical);
+    
+    // Monthly calculations
+    const monthlyBasic = Math.round(basic / 12);
+    const monthlyHRA = Math.round(hra / 12);
+    const monthlyDA = Math.round(da / 12);
+    const monthlyConveyance = Math.round(conveyance / 12);
+    const monthlyMedical = Math.round(medical / 12);
+    const monthlySpecial = Math.round(special / 12);
+    const monthlyTotal = monthlyBasic + monthlyHRA + monthlyDA + monthlyConveyance + monthlyMedical + monthlySpecial;
+
+    return {
+      basic: monthlyBasic.toFixed(2),
+      da: monthlyDA.toFixed(2),
+      conveyance: monthlyConveyance.toFixed(2),
+      other: monthlySpecial.toFixed(2),
+      total: monthlyTotal.toFixed(2),
+      salaryInWords: `Rupees ${numberToWords(annualSalary)} Only Per Annum`
+    };
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    
+    if (name === 'lpa') {
+      const components = calculateSalaryComponents(value);
+      setFormData(prev => ({
+        ...prev,
+        lpa: value,
+        basic: components.basic,
+        da: components.da,
+        conveyance: components.conveyance,
+        other: components.other,
+        total: components.total,
+        salaryInWords: components.salaryInWords
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleDownload = async () => {
@@ -97,14 +162,21 @@ function AppraisalLetter() {
               <h3 className="text-lg font-semibold mb-4">Salary Components</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Basic</label>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Annual CTC (in Lakhs)</label>
                   <input
-                    type="text"
-                    name="basic"
-                    value={formData.basic}
+                    type="number"
+                    name="lpa"
+                    value={formData.lpa}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter CTC in Lakhs"
+                    step="0.1"
                   />
+                  {formData.salaryInWords && (
+                    <p className="mt-2 text-sm text-gray-600">
+                      {formData.salaryInWords}
+                    </p>
+                  )}
                 </div>
 
                 <div className="form-group">

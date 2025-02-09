@@ -13,20 +13,103 @@ function OfferLetter() {
     joiningDate: "",
     designation: "",
     address: " ",
+    lpa: "",
     salary: "",
     salaryInWords: "",
     basic: "",
+    hra: "",
     da: "",
     conveyance: "",
-    other: ""
+    medical: "",
+    lta: "",
+    special: "",
+    gross: ""
   });
+
+  // Convert number to words
+  const numberToWords = (num) => {
+    const single = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+    const double = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+    const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+    const formatTens = (num) => {
+      if (num < 10) return single[num];
+      if (num < 20) return double[num - 10];
+      return tens[Math.floor(num / 10)] + (num % 10 ? " " + single[num % 10] : "");
+    };
+    
+    if (num === 0) return "Zero";
+    const convert = (num) => {
+      if (num < 100) return formatTens(num);
+      if (num < 1000) return single[Math.floor(num / 100)] + " Hundred" + (num % 100 ? " and " + formatTens(num % 100) : "");
+      if (num < 100000) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
+      if (num < 10000000) return convert(Math.floor(num / 100000)) + " Lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
+      return convert(Math.floor(num / 10000000)) + " Crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
+    };
+    return convert(num);
+  };
+
+  // Calculate salary components based on LPA
+  const calculateSalaryComponents = (lpa) => {
+    const annualSalary = parseFloat(lpa) * 100000;
+    
+    // Standard Indian salary structure percentages
+    const basic = Math.round(annualSalary * 0.35); // 35% of CTC
+    const hra = Math.round(basic * 0.4); // 40% of Basic
+    const da = Math.round(annualSalary * 0.30); // 30% of CTC
+    const conveyance = Math.round(annualSalary * 0.20); // 20% of CTC
+    const medical = 15000; // Standard medical allowance
+    const lta = Math.round(basic * 0.1); // 10% of Basic
+    const special = annualSalary - (basic + hra + da + conveyance + medical + lta);
+    
+    // Monthly calculations
+    const monthlyBasic = Math.round(basic / 12);
+    const monthlyHRA = Math.round(hra / 12);
+    const monthlyDA = Math.round(da / 12);
+    const monthlyConveyance = Math.round(conveyance / 12);
+    const monthlyMedical = Math.round(medical / 12);
+    const monthlyLTA = Math.round(lta / 12);
+    const monthlySpecial = Math.round(special / 12);
+    const monthlyGross = monthlyBasic + monthlyHRA + monthlyDA + monthlyConveyance + monthlyMedical + monthlyLTA + monthlySpecial;
+
+    return {
+      basic: monthlyBasic.toFixed(2),
+      hra: monthlyHRA.toFixed(2),
+      da: monthlyDA.toFixed(2),
+      conveyance: monthlyConveyance.toFixed(2),
+      medical: monthlyMedical.toFixed(2),
+      lta: monthlyLTA.toFixed(2),
+      special: monthlySpecial.toFixed(2),
+      gross: monthlyGross.toFixed(2),
+      annualSalary: annualSalary.toFixed(2),
+      salaryInWords: numberToWords(annualSalary)
+    };
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    
+    if (name === 'lpa') {
+      const components = calculateSalaryComponents(value);
+      setFormData(prev => ({
+        ...prev,
+        lpa: value,
+        basic: components.basic,
+        hra: components.hra,
+        da: components.da,
+        conveyance: components.conveyance,
+        medical: components.medical,
+        lta: components.lta,
+        special: components.special,
+        gross: components.gross,
+        annualSalary: components.annualSalary,
+        salaryInWords: components.salaryInWords
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleDownload = async () => {
@@ -114,15 +197,19 @@ function OfferLetter() {
             </div>
 
             <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Total Salary</label>
+              <label className="block mb-1 text-sm font-medium text-gray-700">Total Salary (in Lakhs)</label>
               <input
-                type="text"
-                name="salary"
-                value={formData.salary}
+                type="number"
+                name="lpa"
+                value={formData.lpa}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter CTC in Lakhs"
+                step="0.1"
+                min="0"
               />
             </div>
+
+          
 
             <div className="form-group">
               <label className="block mb-1 text-sm font-medium text-gray-700">Salary in Words</label>
@@ -151,6 +238,17 @@ function OfferLetter() {
                 </div>
 
                 <div className="form-group">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">HRA</label>
+                  <input
+                    type="text"
+                    name="hra"
+                    value={formData.hra}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="form-group">
                   <label className="block mb-1 text-sm font-medium text-gray-700">Dearness Allowance</label>
                   <input
                     type="text"
@@ -173,11 +271,44 @@ function OfferLetter() {
                 </div>
 
                 <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Other Allowance</label>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Medical Allowance</label>
                   <input
                     type="text"
-                    name="other"
-                    value={formData.other}
+                    name="medical"
+                    value={formData.medical}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">LTA</label>
+                  <input
+                    type="text"
+                    name="lta"
+                    value={formData.lta}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Special Allowance</label>
+                  <input
+                    type="text"
+                    name="special"
+                    value={formData.special}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Gross Monthly Salary</label>
+                  <input
+                    type="text"
+                    name="gross"
+                    value={formData.gross}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -422,6 +553,10 @@ function OfferLetter() {
                     <span>: {formData.basic}</span>
                   </div>
                   <div className="compensation-row">
+                    <span>HRA</span>
+                    <span>: {formData.hra}</span>
+                  </div>
+                  <div className="compensation-row">
                     <span>Dearness Allowance</span>
                     <span>: {formData.da}</span>
                   </div>
@@ -430,8 +565,16 @@ function OfferLetter() {
                     <span>: {formData.conveyance}</span>
                   </div>
                   <div className="compensation-row">
-                    <span>Other allowance</span>
-                    <span>: {formData.other}</span>
+                    <span>Medical Allowance</span>
+                    <span>: {formData.medical}</span>
+                  </div>
+                  <div className="compensation-row">
+                    <span>LTA</span>
+                    <span>: {formData.lta}</span>
+                  </div>
+                  <div className="compensation-row">
+                    <span>Special Allowance</span>
+                    <span>: {formData.special}</span>
                   </div>
                   <div className="compensation-row font-bold mt-4 pt-2 border-t">
                     <span>Annual Total</span>

@@ -16,8 +16,8 @@ function AppointmentLetter() {
     designation: " ",
     department: " ",
     reportingAuthority: " ",
-    ctcAmount: " ",
-    ctcInWords: " ",
+    ctc: "",
+    ctcInWords: "",
     location: " ",
     bankName: "",
     accountNumber: "",
@@ -25,12 +25,48 @@ function AppointmentLetter() {
     branchName: "",
   });
 
+  // Function to convert number to words
+  const numberToWords = (num) => {
+    const single = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+    const double = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+    const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+    const formatTens = (num) => {
+      if (num < 10) return single[num];
+      if (num < 20) return double[num - 10];
+      return tens[Math.floor(num / 10)] + (num % 10 ? " " + single[num % 10] : "");
+    };
+    
+    if (num === 0) return "Zero";
+    const convert = (num) => {
+      if (num < 100) return formatTens(num);
+      if (num < 1000) return single[Math.floor(num / 100)] + " Hundred" + (num % 100 ? " and " + formatTens(num % 100) : "");
+      if (num < 100000) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
+      if (num < 10000000) return convert(Math.floor(num / 100000)) + " Lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
+      return convert(Math.floor(num / 10000000)) + " Crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
+    };
+    return convert(Math.round(num));
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    
+    if (name === 'ctc') {
+      // Convert CTC to words when CTC changes
+      const ctcValue = parseFloat(value);
+      const ctcInWords = !isNaN(ctcValue) ? 
+        `Rupees ${numberToWords(ctcValue * 100000)} Only` : '';
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        ctcInWords: ctcInWords
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleDownload = async () => {
@@ -139,25 +175,23 @@ function AppointmentLetter() {
             </div>
 
             <div className="form-group">
-              <label className="block mb-1">CTC Amount</label>
+              <label className="block mb-1 text-sm font-medium text-gray-700">
+                CTC (in Lakhs per annum)
+              </label>
               <input
-                type="text"
-                name="ctcAmount"
-                value={formData.ctcAmount}
+                type="number"
+                name="ctc"
+                value={formData.ctc}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter CTC in Lakhs"
+                step="0.1"
               />
-            </div>
-
-            <div className="form-group">
-              <label className="block mb-1">CTC in Words</label>
-              <input
-                type="text"
-                name="ctcInWords"
-                value={formData.ctcInWords}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-              />
+              {formData.ctcInWords && (
+                <p className="mt-2 text-sm text-gray-600">
+                  {formData.ctcInWords}
+                </p>
+              )}
             </div>
 
             <div className="form-group">
@@ -282,7 +316,7 @@ function AppointmentLetter() {
                     <tr>
                       <td>CTC (break up as per Annexure)</td>
                       <td>
-                        {formData.ctcAmount ? `Total Annual CTC Rs. ${formData.ctcAmount}/- per annum` : '[CTC Amount]'}<br/>
+                        {formData.ctc ? `Total Annual CTC Rs. ${formData.ctc} Lakhs` : '[CTC Amount]'}<br/>
                         {formData.ctcInWords ? `(${formData.ctcInWords})` : '[Amount in Words]'}
                       </td>
                     </tr>

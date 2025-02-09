@@ -9,7 +9,7 @@ function Home() {
     { title: "Payslip", path: "/payslip" },
     { title: "Relieving Letter", path: "/relieving-letter" },
     { title: "Appraisal Letter", path: "/appraisal-letter" },
-    { title: "Increment Letter", path: "/increment-letter" },
+    // { title: "Increment Letter", path: "/increment-letter" },
   ];
 
   return (
