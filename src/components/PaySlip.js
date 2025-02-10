@@ -5,6 +5,8 @@ import "./PaySlip.css";
 import { Download } from "lucide-react";
 const PaySlip = ({ employeeData, companyDetails }) => {
   // Function to format the date into Month Year format
+  console.log("PaySlip Received Company Details:", companyDetails); // Debugging
+
   const formatMonthYear = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
