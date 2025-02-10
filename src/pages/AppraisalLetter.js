@@ -155,89 +155,94 @@ function AppraisalLetter() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-[210mm] mx-auto">
-        <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
-          <div className="ml-2 md:ml-4">
-            <Link to="/" className="back-link flex items-center text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-              <span className="text-sm md:text-base">Back to Home</span>
-            </Link>
-          </div>
+      <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
+  <div className="ml-2 md:ml-4">
+    <Link to="/" className="back-link flex items-center text-gray-600 hover:text-gray-900">
+      <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+      <span className="text-sm md:text-base">Back to Home</span>
+    </Link>
+  </div>
+</div>
+
+{/* Form Section */}
+<div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+  <h2 className="text-xl md:text-2xl font-bold mb-6">Enter Appraisal Letter Details</h2>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {/* Employee Name */}
+    <div className="form-group">
+      <label className="block mb-1 text-sm font-medium text-gray-700">Employee Name</label>
+      <input
+        type="text"
+        name="employeeName"
+        value={formData.employeeName}
+        onChange={handleInputChange}
+        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Enter employee name"
+      />
+    </div>
+
+    {/* Date */}
+    <div className="form-group">
+      <label className="block mb-1 text-sm font-medium text-gray-700">Date</label>
+      <input
+        type="date"
+        name="date"
+        value={formData.date}
+        onChange={handleInputChange}
+        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+
+    {/* Salary Components Section */}
+    <div className="md:col-span-2">
+      <h3 className="text-lg font-semibold mb-4 text-gray-800">Salary Components</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* Annual CTC */}
+        <div className="form-group">
+          <label className="block mb-1 text-sm font-medium text-gray-700">Annual CTC (in Lakhs)</label>
+          <input
+            type="number"
+            name="lpa"
+            value={formData.lpa}
+            onChange={handleInputChange}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter CTC in Lakhs"
+            step="0.1"
+          />
         </div>
 
-        {/* Form Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-xl md:text-2xl font-bold mb-6">Enter Appraisal Letter Details</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Employee Name</label>
-              <input
-                type="text"
-                name="employeeName"
-                value={formData.employeeName}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Date</label>
-              <input
-                type="date"
-                name="date"
-                value={formData.date}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-
-            <div className="md:col-span-2">
-              <h3 className="text-lg font-semibold mb-4">Salary Components</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Annual CTC (in Lakhs)</label>
-                  <input
-                    type="number"
-                    name="lpa"
-                    value={formData.lpa}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter CTC in Lakhs"
-                    step="0.1"
-                  />
-
-                </div>
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
-                  <select
-                    name="company"
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {companies.map((company) => (
-                      <option key={company.id} value={company.name}>
-                        {company.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={handleDownload}
-              className="download-btn flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 active:bg-blue-800 shadow-sm hover:shadow transition-all duration-200"
-            >
-              <Download size={18} className="mr-2" />
-              <span>Generate Appraisal Letter</span>
-            </button>
-          </div>
+        {/* Company */}
+        <div className="form-group">
+          <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
+          <select
+            name="company"
+            onChange={handleInputChange}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            {companies.map((company) => (
+              <option key={company.id} value={company.name}>
+                {company.name}
+              </option>
+            ))}
+          </select>
         </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Submit Button */}
+  <div className="mt-6 flex justify-end">
+    <button
+      onClick={handleDownload}
+      className="download-btn flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 shadow-lg hover:shadow-md transition-all duration-200"
+    >
+      <Download size={18} className="mr-2" />
+      <span>Generate Appraisal Letter</span>
+    </button>
+  </div>
+</div>
 
         {/* Hidden PDF Content */}
         <div ref={containerRef} style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>

@@ -166,201 +166,103 @@ function OfferLetter() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
     <div className="max-w-[210mm] mx-auto">
-      <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
-        <div className="ml-2 md:ml-4">
-          <Link to="/" className="back-link flex items-center text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-            <span className="text-sm md:text-base">Back to Home</span>
-          </Link>
+    <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
+  <div className="ml-2 md:ml-4">
+    <Link to="/" className="back-link flex items-center text-gray-600 hover:text-gray-900">
+      <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+      <span className="text-sm md:text-base">Back to Home</span>
+    </Link>
+  </div>
+</div>
+      
+
+      {/* Form Section */}
+      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-8">Enter Offer Letter Details</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Employee Name */}
+          <div className="form-group">
+            <label className="block mb-2 text-sm font-medium text-gray-700">Employee Name</label>
+            <input
+              type="text"
+              name="employeeName"
+              value={formData.employeeName}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter employe name"
+            />
+          </div>
+
+          {/* Joining Date */}
+          <div className="form-group">
+            <label className="block mb-2 text-sm font-medium text-gray-700">Joining Date</label>
+            <input
+              type="date"
+              name="joiningDate"
+              value={formData.joiningDate}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {/* Designation */}
+          <div className="form-group">
+            <label className="block mb-2 text-sm font-medium text-gray-700">Designation</label>
+            <input
+              type="text"
+              name="designation"
+              value={formData.designation}
+              onChange={handleInputChange}
+              placeholder="Enter Designation"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {/* Total Salary (in Lakhs) */}
+          <div className="form-group">
+            <label className="block mb-2 text-sm font-medium text-gray-700">Total Salary (in Lakhs)</label>
+            <input
+              type="number"
+              name="lpa"
+              value={formData.lpa}
+              onChange={handleInputChange}
+              placeholder="Enter CTC in Lakhs"
+              step="0.1"
+              min="0"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {/* Company Selection */}
+          <div className="form-group">
+            <label className="block mb-2 text-sm font-medium text-gray-700">Company</label>
+            <select
+              name="company"
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {companies.map((company) => (
+                <option key={company.id} value={company.name}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Download Button */}
+        <div className="mt-8 flex justify-end">
+          <button
+            onClick={handleDownload}
+            className="download-btn flex items-center px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 active:bg-blue-800 shadow-lg transform hover:scale-105 transition-all duration-200 text-sm md:text-base"
+          >
+            <Download size={20} className="mr-2" />
+            <span>Generate Offer Letter</span>
+          </button>
         </div>
       </div>
-
-        {/* Form Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-xl md:text-2xl font-bold mb-6">Enter Offer Letter Details</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Employee Name</label>
-              <input
-                type="text"
-                name="employeeName"
-                value={formData.employeeName}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter employee name"
-              />
-            </div>
-         
-
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Joining Date</label>
-              <input
-                type="date"
-                name="joiningDate"
-                value={formData.joiningDate}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter joining date"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Designation</label>
-              <input
-                type="text"
-                name="designation"
-                value={formData.designation}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Total Salary (in Lakhs)</label>
-              <input
-                type="number"
-                name="lpa"
-                value={formData.lpa}
-                onChange={handleInputChange}
-                placeholder="Enter CTC in Lakhs"
-                step="0.1"
-                min="0"
-              />
-            </div>
-
-            <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
-                  <select
-                    name="company"
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {companies.map((company) => (
-                      <option key={company.id} value={company.name}>
-                        {company.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-
-            {/* <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Salary in Words</label>
-              <input
-                type="text"
-                name="salaryInWords"
-                value={formData.salaryInWords}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div> */}
-
-            {/* Salary Components */}
-            {/* <div className="form-group md:col-span-2">
-              <h3 className="text-lg font-semibold mb-4">Salary Components</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Basic</label>
-                  <input
-                    type="text"
-                    name="basic"
-                    value={formData.basic}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">HRA</label>
-                  <input
-                    type="text"
-                    name="hra"
-                    value={formData.hra}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Dearness Allowance</label>
-                  <input
-                    type="text"
-                    name="da"
-                    value={formData.da}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Conveyance Allowance</label>
-                  <input
-                    type="text"
-                    name="conveyance"
-                    value={formData.conveyance}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Medical Allowance</label>
-                  <input
-                    type="text"
-                    name="medical"
-                    value={formData.medical}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">LTA</label>
-                  <input
-                    type="text"
-                    name="lta"
-                    value={formData.lta}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Special Allowance</label>
-                  <input
-                    type="text"
-                    name="special"
-                    value={formData.special}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Gross Monthly Salary</label>
-                  <input
-                    type="text"
-                    name="gross"
-                    value={formData.gross}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-              </div>
-            </div> */}
-          </div>
-
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={handleDownload}
-              className="download-btn flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 active:bg-blue-800 shadow-sm hover:shadow transition-all duration-200 text-sm md:text-base"
-            >
-              <Download size={18} className="mr-2" />
-              <span>Generate Offer Letter</span>
-            </button>
-          </div>
-        </div>
+    </div>
 
         {/* Hidden PDF Content */}
         <div ref={containerRef} style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
@@ -632,7 +534,8 @@ function OfferLetter() {
           </div>
         </div>
       </div>
-    </div>
+      
+  
   );
 }
 

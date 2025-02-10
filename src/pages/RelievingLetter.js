@@ -81,105 +81,106 @@ function RelievingLetter() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
     <div className="max-w-[210mm] mx-auto">
-      <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
-        <div className="ml-2 md:ml-4">
-          <Link to="/" className="back-link flex items-center text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-            <span className="text-sm md:text-base">Back to Home</span>
-          </Link>
-        </div>
-      </div>
+    <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
+  <div className="ml-2 md:ml-4">
+    <Link to="/" className="back-link flex items-center text-gray-600 hover:text-gray-900">
+      <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+      <span className="text-sm md:text-base">Back to Home</span>
+    </Link>
+  </div>
+</div>
 
-        {/* Form Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-xl md:text-2xl font-bold mb-6">Enter Relieving Letter Details</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Employee Name</label>
-              <input
-                type="text"
-                name="employeeName"
-                value={formData.employeeName}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter employee name"
-              />
-            </div>
+{/* Form Section */}
+<div className="bg-white rounded-lg shadow-lg p-6 md:p-8 mb-8">
+  <h2 className="text-xl md:text-2xl font-semibold mb-6 text-gray-800">Enter Relieving Letter Details</h2>
+  
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="form-group">
+      <label className="block mb-1 text-sm font-medium text-gray-700">Employee Name</label>
+      <input
+        type="text"
+        name="employeeName"
+        value={formData.employeeName}
+        onChange={handleInputChange}
+        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Enter employee name"
+      />
+    </div>
 
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Designation</label>
-              <input
-                type="text"
-                name="designation"
-                value={formData.designation}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter designation"
-              />
-            </div>
+    <div className="form-group">
+      <label className="block mb-1 text-sm font-medium text-gray-700">Designation</label>
+      <input
+        type="text"
+        name="designation"
+        value={formData.designation}
+        onChange={handleInputChange}
+        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Enter designation"
+      />
+    </div>
 
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Last Working Date</label>
-              <input
-                type="date"
-                name="lastWorkingDate"
-                value={formData.lastWorkingDate}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter last working date"
-              />
-            </div>
+    <div className="form-group">
+      <label className="block mb-1 text-sm font-medium text-gray-700">Last Working Date</label>
+      <input
+        type="date"
+        name="lastWorkingDate"
+        value={formData.lastWorkingDate}
+        onChange={handleInputChange}
+        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
 
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Employee Sign Date</label>
-              <input
-                type="text"
-                name="employeeSignDate"
-                value={formData.employeeSignDate}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter signing date"
-              />
-            </div>
+    <div className="form-group">
+      <label className="block mb-1 text-sm font-medium text-gray-700">Employee Sign Date</label>
+      <input
+        type="text"
+        name="employeeSignDate"
+        value={formData.employeeSignDate}
+        onChange={handleInputChange}
+        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Enter signing date"
+      />
+    </div>
 
-            <div className="form-group">
-              <label className="block mb-1 text-sm font-medium text-gray-700">Place of Signing</label>
-              <input
-                type="text"
-                name="employeeSignPlace"
-                value={formData.employeeSignPlace}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter place"
-              />
-            </div>
-            <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
-                  <select
-                    name="company"
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {companies.map((company) => (
-                      <option key={company.id} value={company.name}>
-                        {company.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-          </div>
+    <div className="form-group">
+      <label className="block mb-1 text-sm font-medium text-gray-700">Place of Signing</label>
+      <input
+        type="text"
+        name="employeeSignPlace"
+        value={formData.employeeSignPlace}
+        onChange={handleInputChange}
+        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Enter place"
+      />
+    </div>
 
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={handleDownload}
-              className="download-btn flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 active:bg-blue-800 shadow-sm hover:shadow transition-all duration-200 text-sm md:text-base"
-            >
-              <Download size={18} className="mr-2" />
-              <span>Generate Relieving Letter</span>
-            </button>
-          </div>
-        </div>
+    <div className="form-group">
+      <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
+      <select
+        name="company"
+        onChange={handleInputChange}
+        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      >
+        {companies.map((company) => (
+          <option key={company.id} value={company.name}>
+            {company.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  <div className="mt-6 flex justify-end">
+    <button
+      onClick={handleDownload}
+      className="download-btn flex items-center px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 shadow-md hover:shadow-lg transition-all duration-200 text-sm md:text-base"
+    >
+      <Download size={18} className="mr-2" />
+      <span>Generate Relieving Letter</span>
+    </button>
+  </div>
+</div>
+
 
         {/* Hidden PDF Content */}
         <div ref={containerRef} style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>

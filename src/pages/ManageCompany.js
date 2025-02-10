@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { db } from "./firebase";
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Edit, Trash2 } from "lucide-react"; // Icons from Lucide
 
 const ManageCompany = () => {
@@ -98,16 +98,20 @@ const ManageCompany = () => {
     setEditId(null);
     setIsListView(false);
   };
+  const navigate = useNavigate();  // Get the navigate function
 
+  const handleGoBack = () => {
+    navigate(-1);  // Goes back to the previous page in history
+  };
   return (
     <div className="min-h-screen bg-gray-100 p-6 md:p-10">
       <div className="max-w-[210mm] mx-auto">
         <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
           <div className="ml-2 md:ml-4">
-            <Link to="/" className="flex items-center text-gray-600 hover:text-gray-900">
+            <div onClick={handleGoBack} className="flex items-center text-gray-600 hover:text-gray-900">
               <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
               <span className="text-sm md:text-base">Back to Home</span>
-            </Link>
+            </div>
           </div>
         </div>
 

@@ -2,7 +2,7 @@ import React from "react";
 import html2pdf from "html2pdf.js";
 import logo from "../assets/logo.PNG";
 import "./PaySlip.css";
-
+import { Download } from "lucide-react";
 const PaySlip = ({ employeeData, companyDetails }) => {
   // Function to format the date into Month Year format
   const formatMonthYear = (dateString) => {
@@ -202,9 +202,14 @@ const PaySlip = ({ employeeData, companyDetails }) => {
   };
 
   return (
-    <div>
-      <button className="download-button" onClick={handleDownloadPDF}>
-        Download PDF
+  
+      <div className="mt-6 flex justify-end">
+    <button
+    
+      className="download-btn flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 shadow-lg hover:shadow-md transition-all duration-200"
+    onClick={handleDownloadPDF}>
+       <Download size={18} className="mr-2" /> 
+       <span>Generate PaySlip</span>
       </button>
     </div>
   );

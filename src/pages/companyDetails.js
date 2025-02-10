@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "../components/CompanyDetailsForm.css";
 import { db } from "./firebase";
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
@@ -9,21 +9,21 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
   }, []);
   const [companies, setCompanies] = useState([]);
   const fetchCompanies = async () => {
- 
+
     const querySnapshot = await getDocs(collection(db, "companies"));
     const companyList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    
+
     console.log(companyList);
     setCompanies(companyList);
   };
   const [companyDetails, setCompanyDetails] = useState({
-    
-    name: "",
-    address: "",
-    city: "",
-    phone: "",
-    website: "",
-logo:"",
+
+    // name: "",
+    // address: "",
+    // city: "",
+    // phone: "",
+    // website: "",
+    // logo: "",
     // Employee Details
     empCode: "",
     employeeName: "",
@@ -182,9 +182,8 @@ logo:"",
       placeholder: `Enter ${label.toLowerCase()}`,
       readOnly: isDisabled,
       disabled: isDisabled,
-      className: `${isDisabled ? "readonly-input" : ""} ${
-        isAmountField ? "amount-input" : ""
-      }`,
+      className: `${isDisabled ? "readonly-input" : ""} ${isAmountField ? "amount-input" : ""
+        }`,
     };
 
     // Special handling for all number type inputs
@@ -215,27 +214,27 @@ logo:"",
   };
 
   return (
-    <div className="company-details-form">
-      <h3>Payslip Details</h3>
+    <div className="">
+  
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Enter Payslip Detail</h2>
 
-      {/* Company Details Section */}
-     
+
       <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
-                  <select
-                    name="company"
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {companies.map((company) => (
-                      <option key={company.id} value={company.name}>
-                        {company.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+        <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
+        <select
+          name="company"
+          onChange={handleChange}
+          className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          {companies.map((company) => (
+            <option key={company.id} value={company.name}>
+              {company.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      {/* Employee Details Section */}
+ 
       <h4>Employee Details</h4>
       {renderInput("empCode", "Employee Code")}
       {renderInput("employeeName", "Employee Name")}
@@ -246,50 +245,11 @@ logo:"",
       {renderInput("department", "Department")}
       {renderInput("payableDays", "Payable Days", "number")}
 
-      {/* LPA Input Field */}
+
       <h4>Salary Details</h4>
       {renderInput("lpa", "Annual Package (LPA)", "number", false)}
 
-      {/* {showDetails && (
-        <>
-       
-          <h4>Earnings</h4>
-          {[
-            "basic",
-            "da",
-            "conveyanceAllowance",
-            "otherAllowance",
-            "medicalAllowance",
-            "gross",
-            "cca",
-          ].map((field) =>
-            renderInput(
-              field,
-              field.charAt(0).toUpperCase() +
-                field.slice(1).replace(/([A-Z])/g, " $1"),
-              "number",
-              true
-            )
-          )}
 
-         
-          <h4>Deductions</h4>
-          {[
-            "professionalTax",
-            "otherDeductions",
-            "totalDeductions",
-            "netPay",
-          ].map((field) =>
-            renderInput(
-              field,
-              field.charAt(0).toUpperCase() +
-                field.slice(1).replace(/([A-Z])/g, " $1"),
-              "number",
-              true
-            )
-          )}
-        </>
-      )} */}
     </div>
   );
 };
