@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Download } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -6,9 +6,11 @@ import { Link } from "react-router-dom";
 import "../assets/styles/AppointmentLetter.css";
 import "../assets/styles/ButtonStyles.css";
 import { ArrowLeft } from "lucide-react";
-
+import { db } from "./firebase";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
 function AppointmentLetter() {
   const containerRef = React.useRef(null);
+  const [companies, setCompanies] = useState([]);
   const [formData, setFormData] = useState({
     employeeName: " ",
     address: " ",
@@ -25,6 +27,18 @@ function AppointmentLetter() {
     branchName: "",
   });
 
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
+
+  const fetchCompanies = async () => {
+
+    const querySnapshot = await getDocs(collection(db, "companies"));
+    const companyList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    
+    console.log(companyList);
+    setCompanies(companyList);
+  };
   // Function to convert number to words
   const numberToWords = (num) => {
     const single = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
@@ -50,6 +64,24 @@ function AppointmentLetter() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
+
+    if (name === "company") {
+      const selectedCompany = companies.find(company => company.name === value);
+      if (selectedCompany) {
+        setFormData({
+          ...formData,
+          companyName: selectedCompany.name,
+          companyAddressLine1: selectedCompany.address,
+         
+         
+          companyEmail: selectedCompany.email,
+          companyPhone: selectedCompany.mobile,
+          companyWebsite: selectedCompany.website,
+          companyLogo:selectedCompany.logo,
+          // Add any additional fields as needed
+        });
+      }
+    }
     if (name === 'ctc') {
       // Convert CTC to words when CTC changes
       const ctcValue = parseFloat(value);
@@ -249,6 +281,20 @@ function AppointmentLetter() {
                 className="w-full p-2 border rounded"
               />
             </div>
+            <div className="form-group">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
+                  <select
+                    name="company"
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {companies.map((company) => (
+                      <option key={company.id} value={company.name}>
+                        {company.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
           </div>
 
           <div className="mt-6 flex justify-end">
@@ -268,8 +314,8 @@ function AppointmentLetter() {
           <div className="appointment-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
             <div className="letter-header">
               <div className="logo-section">
-                <img src="/nitor-logo.png" alt="Nitor" className="company-logo" />
-                <p className="brilliance">Brilliance @ work</p>
+                <img src={formData.companyLogo} alt={formData.companyName}  className="company-logo" />
+                <p className="brilliance">{formData.companyName}</p>
               </div>
               <p className="letter-date">17 December 2020</p>
             </div>
@@ -346,16 +392,11 @@ function AppointmentLetter() {
               </ol>
 
               <div className="footer-section">
-                <p>Nitor Infotech Pvt. Ltd.</p>
+                <p>{formData.companyName}</p>
                 <p>
-                  SEZ # 2, Block Blue-04, Floor "B" Wing, Plot 3A, Embassy
-                  Tech Zone,
+                {formData.companyAddressLine1}
                 </p>
-                <p>
-                  Rajiv Gandhi Infotech Park, Phase-II, Hinjewadi, Pune- 41
-                  1057
-                </p>
-                <p>www.nitorinfotech.com | info@nitorinfotech.com</p>
+                <p>{formData.companyWebsite}</p>
               </div>
             </div>
           </div>
@@ -365,11 +406,10 @@ function AppointmentLetter() {
             <div className="letter-header">
               <div className="logo-section">
                 <img
-                  src="/nitor-logo.png"
-                  alt="Nitor"
+                src={formData.companyLogo} alt={formData.companyName} 
                   className="company-logo"
                 />
-                <p className="brilliance">Brilliance @ work</p>
+                <p className="brilliance">{formData.companyName}</p>
               </div>
             </div>
 
@@ -457,11 +497,10 @@ function AppointmentLetter() {
             <div className="letter-header">
               <div className="logo-section">
                 <img
-                  src="/nitor-logo.png"
-                  alt="Nitor"
+                src={formData.companyLogo} alt={formData.companyName} 
                   className="company-logo"
                 />
-                <p className="brilliance">Brilliance @ work</p>
+                <p className="brilliance">{formData.companyName} </p>
               </div>
             </div>
 
@@ -541,11 +580,11 @@ function AppointmentLetter() {
             <div className="letter-header">
               <div className="logo-section">
                 <img
-                  src="/nitor-logo.png"
-                  alt="Nitor"
+                               src={formData.companyLogo} alt={formData.companyName} 
+
                   className="company-logo"
                 />
-                <p className="brilliance">Brilliance @ work</p>
+                <p className="brilliance">{formData.companyName} </p>
               </div>
             </div>
 
@@ -628,11 +667,11 @@ function AppointmentLetter() {
             <div className="letter-header">
               <div className="logo-section">
                 <img
-                  src="/nitor-logo.png"
-                  alt="Nitor"
+                                 src={formData.companyLogo} alt={formData.companyName} 
+
                   className="company-logo"
                 />
-                <p className="brilliance">Brilliance @ work</p>
+                <p className="brilliance">{formData.companyName}</p>
               </div>
             </div>
 
@@ -704,11 +743,11 @@ function AppointmentLetter() {
             <div className="letter-header">
               <div className="logo-section">
                 <img
-                  src="/nitor-logo.png"
-                  alt="Nitor"
+                                 src={formData.companyLogo} alt={formData.companyName} 
+
                   className="company-logo"
                 />
-                <p className="brilliance">Brilliance @ work</p>
+                <p className="brilliance">{formData.companyName}</p>
               </div>
             </div>
 
@@ -753,7 +792,7 @@ function AppointmentLetter() {
 
                 <p>Thanking You,</p>
 
-                <p className="company-name">For Nitor Infotech Pvt. Ltd</p>
+                <p className="company-name">{formData.companyName}</p>
 
                 <div className="signature-section">
                   <p className="signatory-name">Rohini Wagh</p>
@@ -770,11 +809,11 @@ function AppointmentLetter() {
             <div className="letter-header">
               <div className="logo-section">
                 <img
-                  src="/nitor-logo.png"
-                  alt="Nitor"
+                              src={formData.companyLogo} alt={formData.companyName} 
+
                   className="company-logo"
                 />
-                <p className="brilliance">Brilliance @ work</p>
+                <p className="brilliance">{formData.companyName}</p>
               </div>
             </div>
 

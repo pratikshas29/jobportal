@@ -1,31 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Download } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import "../assets/styles/ButtonStyles.css";
 import "../assets/styles/AppraisalLetter.css";
-
+import { db } from "./firebase";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
 function AppraisalLetter() {
   const containerRef = React.useRef(null);
+  const [companies, setCompanies] = useState([]);
   const [formData, setFormData] = useState({
     employeeName: "",
     date: "",
     lpa: "", // Only input needed for salary
     // Other fields will be calculated automatically
     // Company Details
-    companyName: "MYCLAN SERVICES PRIVATE LIMITED",
-    companyAddressLine1: "Office No -309, 3rd Floor",
-    companyAddressLine2: "Navale Icon, Near Navale Bridge",
-    companyAddressLine3: "Narhe",
-    companyCity: "Pune",
-    companyState: "Maharashtra",
-    companyPincode: "411041",
-    companyEmail: "hr@myclanservices.co.in",
-    companyPhone: "8956165171",
-    companyWebsite: "www.myclanservices.co.in"
+    // companyName: "MYCLAN SERVICES PRIVATE LIMITED",
+    // companyAddressLine1: "Office No -309, 3rd Floor",
+    // companyAddressLine2: "Navale Icon, Near Navale Bridge",
+    // companyAddressLine3: "Narhe",
+    // companyCity: "Pune",
+    // companyState: "Maharashtra",
+    // companyPincode: "411041",
+    // companyEmail: "hr@myclanservices.co.in",
+    // companyPhone: "8956165171",
+    // companyWebsite: "www.myclanservices.co.in"
   });
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
+  const fetchCompanies = async () => {
+
+    const querySnapshot = await getDocs(collection(db, "companies"));
+    const companyList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    
+    console.log(companyList);
+    setCompanies(companyList);
+  };
+
+ 
   // Convert number to words
   const numberToWords = (num) => {
     const single = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
@@ -36,7 +51,7 @@ function AppraisalLetter() {
       if (num < 20) return double[num - 10];
       return tens[Math.floor(num / 10)] + (num % 10 ? " " + single[num % 10] : "");
     };
-    
+
     if (num === 0) return "Zero";
     const convert = (num) => {
       if (num < 100) return formatTens(num);
@@ -51,7 +66,7 @@ function AppraisalLetter() {
   // Calculate salary components based on LPA
   const calculateSalaryComponents = (lpa) => {
     const annualSalary = parseFloat(lpa) * 100000;
-    
+
     // Standard Indian salary structure
     const basic = Math.round(annualSalary * 0.40); // 40% of CTC
     const hra = Math.round(basic * 0.50); // 50% of Basic
@@ -59,7 +74,7 @@ function AppraisalLetter() {
     const conveyance = 19200; // Standard yearly conveyance
     const medical = 15000; // Standard medical allowance
     const special = annualSalary - (basic + hra + da + conveyance + medical);
-    
+
     // Monthly calculations
     const monthlyBasic = Math.round(basic / 12);
     const monthlyHRA = Math.round(hra / 12);
@@ -81,7 +96,25 @@ function AppraisalLetter() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+   
+
+    if (name === "company") {
+      const selectedCompany = companies.find(company => company.name === value);
+      if (selectedCompany) {
+        setFormData({
+          ...formData,
+          companyName: selectedCompany.name,
+          companyAddressLine1: selectedCompany.address,
+         
+         
+          companyEmail: selectedCompany.email,
+          companyPhone: selectedCompany.mobile,
+          companyWebsite: selectedCompany.website,
+          companyLogo:selectedCompany.logo,
+          // Add any additional fields as needed
+        });
+      }
+    }
     if (name === 'lpa') {
       const components = calculateSalaryComponents(value);
       setFormData(prev => ({
@@ -118,23 +151,23 @@ function AppraisalLetter() {
 
     pdf.save("appraisal-letter.pdf");
   };
-
+  
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-    <div className="max-w-[210mm] mx-auto">
-      <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
-        <div className="ml-2 md:ml-4">
-          <Link to="/" className="back-link flex items-center text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-            <span className="text-sm md:text-base">Back to Home</span>
-          </Link>
+      <div className="max-w-[210mm] mx-auto">
+        <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
+          <div className="ml-2 md:ml-4">
+            <Link to="/" className="back-link flex items-center text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+              <span className="text-sm md:text-base">Back to Home</span>
+            </Link>
+          </div>
         </div>
-      </div>
 
         {/* Form Section */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <h2 className="text-xl md:text-2xl font-bold mb-6">Enter Appraisal Letter Details</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-group">
               <label className="block mb-1 text-sm font-medium text-gray-700">Employee Name</label>
@@ -158,6 +191,7 @@ function AppraisalLetter() {
               />
             </div>
 
+
             <div className="md:col-span-2">
               <h3 className="text-lg font-semibold mb-4">Salary Components</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -172,56 +206,24 @@ function AppraisalLetter() {
                     placeholder="Enter CTC in Lakhs"
                     step="0.1"
                   />
-                  {/* {formData.salaryInWords && (
-                    <p className="mt-2 text-sm text-gray-600">
-                      {formData.salaryInWords}
-                    </p>
-                  )} */}
-                </div>
 
-                {/* <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Dearness Allowance</label>
-                  <input
-                    type="text"
-                    name="da"
-                    value={formData.da}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
                 </div>
-
                 <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Conveyance Allowance</label>
-                  <input
-                    type="text"
-                    name="conveyance"
-                    value={formData.conveyance}
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
+                  <select
+                    name="company"
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  >
+                    {companies.map((company) => (
+                      <option key={company.id} value={company.name}>
+                        {company.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Other Allowance</label>
-                  <input
-                    type="text"
-                    name="other"
-                    value={formData.other}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
 
-                <div className="form-group">
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Total Annual</label>
-                  <input
-                    type="text"
-                    name="total"
-                    value={formData.total}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div> */}
               </div>
             </div>
           </div>
@@ -244,13 +246,14 @@ function AppraisalLetter() {
               <div>
                 <h1 className="company-name">{formData.companyName}</h1>
                 <p className="company-address">
-                  {formData.companyAddressLine1}, {formData.companyAddressLine2}, {formData.companyAddressLine3}
+                  {formData.companyAddressLine1}
                   <br />
-                  {formData.companyCity} - {formData.companyPincode}, ({formData.companyState}) INDIA.
+                  {/* {formData.companyCity} - {formData.companyPincode}, ({formData.companyState}) INDIA. */}
                 </p>
               </div>
-              <img src="/myclan-logo.png" alt="Myclan" className="company-logo" />
-            </div>
+              <img src={formData.companyLogo} alt={formData.companyName} className="company-logo" />
+              </div>
+
 
             <h2 className="letter-title">Employee Appraisal Letter</h2>
 
@@ -260,9 +263,9 @@ function AppraisalLetter() {
               <p className="subject">Sub: Appraisal Letter</p>
 
               <p className="appreciation-text">
-                We would like to express our appreciation and commendation for all the passion 
-                and commitment you have been exhibiting in your existing role. In recognition 
-                of your contribution, it is our pleasure to award you a gross increase in your 
+                We would like to express our appreciation and commendation for all the passion
+                and commitment you have been exhibiting in your existing role. In recognition
+                of your contribution, it is our pleasure to award you a gross increase in your
                 salary with effect from August 2024.
               </p>
 
@@ -296,8 +299,8 @@ function AppraisalLetter() {
               </div>
 
               <p className="expectation-text">
-                We expect you to keep up your performance in the years to come and grow with 
-                the organization. Please sign and return the duplicate copy in token of your 
+                We expect you to keep up your performance in the years to come and grow with
+                the organization. Please sign and return the duplicate copy in token of your
                 acceptance, for your records.
               </p>
 

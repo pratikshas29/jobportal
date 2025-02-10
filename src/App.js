@@ -7,12 +7,15 @@ import AppointmentLetter from "./pages/AppointmentLetter";
 import RelievingLetter from "./pages/RelievingLetter";
 import AppraisalLetter from "./pages/AppraisalLetter";
 import IncrementLetter from "./pages/IncrementLetter";
+import ManageCompany from "./pages/ManageCompany";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/manage-company" element={<ManageCompany />} />
+
         <Route path="/payslip" element={<PaySlipGenerator />} />
         <Route path="/offer-letter" element={<OfferLetter />} />
         <Route path="/appointment-letter" element={<AppointmentLetter />} />

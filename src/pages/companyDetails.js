@@ -1,16 +1,29 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import "../components/CompanyDetailsForm.css";
-
+import { db } from "./firebase";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
 const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
   const [showDetails, setShowDetails] = useState(false);
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
+  const [companies, setCompanies] = useState([]);
+  const fetchCompanies = async () => {
+ 
+    const querySnapshot = await getDocs(collection(db, "companies"));
+    const companyList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    
+    console.log(companyList);
+    setCompanies(companyList);
+  };
   const [companyDetails, setCompanyDetails] = useState({
-    // Company Details
+    
     name: "",
     address: "",
     city: "",
     phone: "",
     website: "",
-
+logo:"",
     // Employee Details
     empCode: "",
     employeeName: "",
@@ -80,6 +93,21 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "company") {
+      const selectedCompany = companies.find(company => company.name === value);
+      if (selectedCompany) {
+        setCompanyDetails({
+          ...companyDetails,
+          name: selectedCompany.name,
+          address: selectedCompany.address,
+          email: selectedCompany.email,
+          phone: selectedCompany.mobile,
+          website: selectedCompany.website,
+          logo: selectedCompany.logo, // Updating the logo dynamically
+          // Add any additional fields as needed
+        });
+      }
+    }
 
     if (name === "pan") {
       const updatedValue = value.toUpperCase();
@@ -191,20 +219,21 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
       <h3>Payslip Details</h3>
 
       {/* Company Details Section */}
-      <h4>Company Details</h4>
-      {renderInput("name", "Company Name")}
+     
       <div className="form-group">
-        <label>Address:</label>
-        <textarea
-          name="address"
-          value={companyDetails.address}
-          onChange={handleChange}
-          placeholder="Enter address"
-        />
-      </div>
-      {renderInput("city", "City")}
-      {renderInput("phone", "Phone", "tel")}
-      {renderInput("website", "Website", "url")}
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
+                  <select
+                    name="company"
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {companies.map((company) => (
+                      <option key={company.id} value={company.name}>
+                        {company.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
       {/* Employee Details Section */}
       <h4>Employee Details</h4>

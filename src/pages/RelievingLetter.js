@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Download } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import "../assets/styles/ButtonStyles.css";
 import "../assets/styles/RelievingLetter.css";
-
+import { db } from "./firebase";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
 function RelievingLetter() {
   const containerRef = React.useRef(null);
+  const [companies, setCompanies] = useState([]);
+
   const [formData, setFormData] = useState({
     employeeName: "",
     designation: "",
@@ -15,9 +18,38 @@ function RelievingLetter() {
     employeeSignDate: "",
     employeeSignPlace: ""
   });
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
+  const fetchCompanies = async () => {
+
+    const querySnapshot = await getDocs(collection(db, "companies"));
+    const companyList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    
+    console.log(companyList);
+    setCompanies(companyList);
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === "company") {
+      const selectedCompany = companies.find(company => company.name === value);
+      if (selectedCompany) {
+        setFormData({
+          ...formData,
+          companyName: selectedCompany.name,
+          companyAddressLine1: selectedCompany.address,
+         
+         
+          companyEmail: selectedCompany.email,
+          companyPhone: selectedCompany.mobile,
+          companyWebsite: selectedCompany.website,
+          companyLogo:selectedCompany.logo,
+          // Add any additional fields as needed
+        });
+      }
+    }
+
     setFormData(prevState => ({
       ...prevState,
       [name]: value
@@ -122,6 +154,20 @@ function RelievingLetter() {
                 placeholder="Enter place"
               />
             </div>
+            <div className="form-group">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
+                  <select
+                    name="company"
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {companies.map((company) => (
+                      <option key={company.id} value={company.name}>
+                        {company.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
           </div>
 
           <div className="mt-6 flex justify-end">
@@ -140,8 +186,8 @@ function RelievingLetter() {
           <div className="relieving-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
             <div className="letter-header">
               <div className="logo-section">
-                <img src="/nitor-logo.png" alt="Nitor" className="company-logo" />
-                <p className="brilliance">Brilliance @ work</p>
+                <img  src={formData.companyLogo} alt={formData.companyName} className="company-logo" />
+                <p className="brilliance">{formData.companyName}</p>
               </div>
             </div>
 
@@ -223,15 +269,11 @@ function RelievingLetter() {
               </div>
 
               <div className="footer">
-                <p>Nitor Infotech Pvt.Ltd.</p>
+                <p>{formData.companyName}</p>
                 <p>
-                  SEZ # 2, Block Blue-04, Floor "B" Wing, Plot 3A, Embassy Tech
-                  Zone,
+              {formData.companyAddressLine1}
                 </p>
-                <p>
-                  Rajiv Gandhi Infotech Park, Phase II, Hinjewadi, Pune- 411057
-                </p>
-                <p>www.nitorinfotech.com | info@nitorinfotech.com</p>
+                <p>{formData.companyWebsite}</p>
               </div>
 
               <div className="signature-section">
@@ -247,7 +289,7 @@ function RelievingLetter() {
                   </div>
 
                   <div className="company-sign">
-                    <p>For Nitor Infotech Pvt Ltd</p>
+                    <p>{formData.companyName}</p>
                     <p className="sign-name">Rohini Wagh</p>
                     <p className="designation">VP & Head – People Function</p>
                   </div>
@@ -260,11 +302,10 @@ function RelievingLetter() {
             <div className="letter-header">
               <div className="logo-section">
                 <img
-                  src="/nitor-logo.png"
-                  alt="Nitor"
+                src={formData.companyLogo} alt={formData.companyName}
                   className="company-logo"
                 />
-                <p className="brilliance">Brilliance @ work</p>
+                <p className="brilliance">{formData.companyName}</p>
               </div>
             </div>
 
@@ -301,7 +342,7 @@ function RelievingLetter() {
                   </div>
 
                   <div className="company-sign">
-                    <p>For Nitor Infotech Pvt Ltd</p>
+                    <p>{formData.companyName}</p>
 
                     <p className="sign-name">Rohini Wagh</p>
                     <p className="designation">VP & Head – People Function</p>
@@ -310,15 +351,11 @@ function RelievingLetter() {
               </div>
 
               <div className="footer">
-                <p>Nitor Infotech Pvt.Ltd.</p>
+                <p>{formData.companyName}</p>
                 <p>
-                  SEZ # 2, Block Blue-04, Floor "B" Wing, Plot 3A, Embassy Tech
-                  Zone,
+                {formData.companyAddressLine1}
                 </p>
-                <p>
-                  Rajiv Gandhi Infotech Park, Phase II, Hinjewadi, Pune- 411057
-                </p>
-                <p>www.nitorinfotech.com | info@nitorinfotech.com</p>
+                <p>{formData.companyWebsite}</p>
               </div>
             </div>
           </div>

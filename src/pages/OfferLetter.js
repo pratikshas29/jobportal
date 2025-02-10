@@ -1,18 +1,20 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Download, ArrowLeft } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Link } from "react-router-dom";
 import "../assets/styles/OfferLetter.css";
 import "../assets/styles/ButtonStyles.css";
-
+import { db } from "./firebase";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
 function OfferLetter() {
   const containerRef = React.useRef(null);
+  const [companies, setCompanies] = useState([]);
   const [formData, setFormData] = useState({
     employeeName: "",
     joiningDate: "",
     designation: "",
-    address: " ",
+ 
     lpa: "",
     salary: "",
     salaryInWords: "",
@@ -47,7 +49,18 @@ function OfferLetter() {
     };
     return convert(num);
   };
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
+  const fetchCompanies = async () => {
+
+    const querySnapshot = await getDocs(collection(db, "companies"));
+    const companyList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    
+    console.log(companyList);
+    setCompanies(companyList);
+  };
   // Calculate salary components based on LPA
   const calculateSalaryComponents = (lpa) => {
     const annualSalary = parseFloat(lpa) * 100000;
@@ -87,7 +100,23 @@ function OfferLetter() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+    if (name === "company") {
+      const selectedCompany = companies.find(company => company.name === value);
+      if (selectedCompany) {
+        setFormData({
+          ...formData,
+          companyName: selectedCompany.name,
+          companyAddressLine1: selectedCompany.address,
+         
+         
+          companyEmail: selectedCompany.email,
+          companyPhone: selectedCompany.mobile,
+          companyWebsite: selectedCompany.website,
+          companyLogo:selectedCompany.logo,
+          // Add any additional fields as needed
+        });
+      }
+    }
     if (name === 'lpa') {
       const components = calculateSalaryComponents(value);
       setFormData(prev => ({
@@ -162,16 +191,7 @@ function OfferLetter() {
                 placeholder="Enter employee name"
               />
             </div>
-            <div className="form-group">
-              <label className="block mb-1">Address</label>
-              <textarea
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded"
-                rows="3"
-              />
-            </div>
+         
 
             <div className="form-group">
               <label className="block mb-1 text-sm font-medium text-gray-700">Joining Date</label>
@@ -209,7 +229,21 @@ function OfferLetter() {
               />
             </div>
 
-          
+            <div className="form-group">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
+                  <select
+                    name="company"
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {companies.map((company) => (
+                      <option key={company.id} value={company.name}>
+                        {company.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
 
             {/* <div className="form-group">
               <label className="block mb-1 text-sm font-medium text-gray-700">Salary in Words</label>
@@ -335,19 +369,18 @@ function OfferLetter() {
             <div className="letter-header">
               <div className="company-info">
                 <h1 className="company-name">
-                  MYCLAN SERVICES PRIVATE LIMITED
+                {formData.companyName}
                 </h1>
                 <p className="company-address">
                   {/* Office No -309, 3<sup>rd</sup> Floor, Navale Icon, Near Navale
                   Bridge, Narhe
                   <br />
                   Pune - 411041, (Maharashtra) INDIA. */}
-                  {formData.address}
+                     {formData.companyAddressLine1}
                 </p>
               </div>
               <img
-                src="/myclan-logo.png"
-                alt="Company Logo"
+              src={formData.companyLogo} alt={formData.companyName}
                 className="company-logo"
               />
             </div>
@@ -403,8 +436,8 @@ function OfferLetter() {
 
             <div className="contact-section">
               <p className="font-semibold">Contact Us:</p>
-              <p>Email – hr@myclanservices.co.in Contact No – 8956165171</p>
-              <p>Website – www.myclanservices.co.in</p>
+              <p>Email – {formData.companyEmail} Contact No – {formData.companyPhone}</p>
+              <p>Website – {formData.companyWebsite}</p>
             </div>
           </div>
 
@@ -413,18 +446,14 @@ function OfferLetter() {
             <div className="letter-header">
               <div className="company-info">
                 <h1 className="company-name">
-                  MYCLAN SERVICES PRIVATE LIMITED
+                {formData.companyName}
                 </h1>
                 <p className="company-address">
-                  Office No -309, 3<sup>rd</sup> Floor, Navale Icon, Near Navale
-                  Bridge, Narhe
-                  <br />
-                  Pune - 411041, (Maharashtra) INDIA.
+                {formData.companyAddressLine1}
                 </p>
               </div>
               <img
-                src="/myclan-logo.png"
-                alt="Company Logo"
+              src={formData.companyLogo} alt={formData.companyName}
                 className="company-logo"
               />
             </div>
@@ -503,8 +532,8 @@ function OfferLetter() {
 
             <div className="contact-section">
               <p className="font-semibold">Contact Us:</p>
-              <p>Email – hr@myclanservices.co.in Contact No – 8956165171</p>
-              <p>Website – www.myclanservices.co.in</p>
+              <p>Email – {formData.companyEmail} Contact No – {formData.companyPhone}</p>
+              <p>Website – {formData.companyWebsite}</p>
             </div>
           </div>
 
@@ -512,19 +541,15 @@ function OfferLetter() {
           <div className="offer-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
             <div className="letter-header">
               <div className="company-info">
-                <h1 className="company-name">
-                  MYCLAN SERVICES PRIVATE LIMITED
+              <h1 className="company-name">
+                {formData.companyName}
                 </h1>
                 <p className="company-address">
-                  Office No -309, 3<sup>rd</sup> Floor, Navale Icon, Near Navale
-                  Bridge, Narhe
-                  <br />
-                  Pune - 411041, (Maharashtra) INDIA.
+                {formData.companyAddressLine1}
                 </p>
               </div>
               <img
-                src="/myclan-logo.png"
-                alt="Company Logo"
+              src={formData.companyLogo} alt={formData.companyName}
                 className="company-logo"
               />
             </div>
@@ -601,8 +626,8 @@ function OfferLetter() {
 
             <div className="contact-section">
               <p className="font-semibold">Contact Us:</p>
-              <p>Email – hr@myclanservices.co.in Contact No – 8956165171</p>
-              <p>Website – www.myclanservices.co.in</p>
+              <p>Email – {formData.companyEmail} Contact No – {formData.companyPhone}</p>
+              <p>Website – {formData.companyWebsite}</p>
             </div>
           </div>
         </div>

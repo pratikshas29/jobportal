@@ -27,7 +27,7 @@ const PaySlip = ({ employeeData, companyDetails }) => {
             <div class="payslip-container">
                 <div class="header">
                     <div class="logo">
-                        <img src="${logo}" alt="Company Logo" class="company-logo" />
+                        <img src="${companyDetails.logo}" alt="Company Logo" class="company-logo" />
                     </div>
                     <div class="company-details">
                         <h2>${companyDetails.name || ""}</h2>

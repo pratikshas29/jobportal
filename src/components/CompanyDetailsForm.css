@@ -98,9 +98,7 @@
     }
 }
 
-.company-details-form {
-    animation: fadeIn 0.5s ease-out;
-}
+
 
 /* Optional: Style for success/error states */
 .form-group.success input {
