@@ -29,11 +29,10 @@ function PaySlipGenerator() {
             />
           {/* </div> */}
 
-          {Object.keys(companyDetails).length > 0 && (
             <div className="bg-white p-6 rounded-lg shadow">
               <PaySlip companyDetails={companyDetails} />
             </div>
-          )}
+         
         </div>
       </div>
     </div>

@@ -221,9 +221,9 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
       <h4>Salary Details</h4>
       {renderInput("lpa", "Annual Package (LPA)", "number", false)}
 
-      {showDetails && (
+      {/* {showDetails && (
         <>
-          {/* Earnings Section */}
+       
           <h4>Earnings</h4>
           {[
             "basic",
@@ -243,7 +243,7 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
             )
           )}
 
-          {/* Deductions Section */}
+         
           <h4>Deductions</h4>
           {[
             "professionalTax",
@@ -260,7 +260,7 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
             )
           )}
         </>
-      )}
+      )} */}
     </div>
   );
 };

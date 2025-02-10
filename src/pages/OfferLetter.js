@@ -211,7 +211,7 @@ function OfferLetter() {
 
           
 
-            <div className="form-group">
+            {/* <div className="form-group">
               <label className="block mb-1 text-sm font-medium text-gray-700">Salary in Words</label>
               <input
                 type="text"
@@ -220,10 +220,10 @@ function OfferLetter() {
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
-            </div>
+            </div> */}
 
             {/* Salary Components */}
-            <div className="form-group md:col-span-2">
+            {/* <div className="form-group md:col-span-2">
               <h3 className="text-lg font-semibold mb-4">Salary Components</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
@@ -314,7 +314,7 @@ function OfferLetter() {
                   />
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           <div className="mt-6 flex justify-end">

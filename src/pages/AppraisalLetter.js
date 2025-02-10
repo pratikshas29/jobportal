@@ -172,14 +172,14 @@ function AppraisalLetter() {
                     placeholder="Enter CTC in Lakhs"
                     step="0.1"
                   />
-                  {formData.salaryInWords && (
+                  {/* {formData.salaryInWords && (
                     <p className="mt-2 text-sm text-gray-600">
                       {formData.salaryInWords}
                     </p>
-                  )}
+                  )} */}
                 </div>
 
-                <div className="form-group">
+                {/* <div className="form-group">
                   <label className="block mb-1 text-sm font-medium text-gray-700">Dearness Allowance</label>
                   <input
                     type="text"
@@ -221,7 +221,7 @@ function AppraisalLetter() {
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
