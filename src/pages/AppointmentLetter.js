@@ -11,6 +11,7 @@ import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase
 function AppointmentLetter() {
   const containerRef = React.useRef(null);
   const [companies, setCompanies] = useState([]);
+  const [candidates, setCandidates] = useState([]);
   const [formData, setFormData] = useState({
     employeeName: " ",
     address: " ",
@@ -29,16 +30,24 @@ function AppointmentLetter() {
 
   useEffect(() => {
     fetchCompanies();
+    fetchCandidates();
   }, []);
 
   const fetchCompanies = async () => {
-
     const querySnapshot = await getDocs(collection(db, "companies"));
     const companyList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     
     console.log(companyList);
     setCompanies(companyList);
   };
+
+  const fetchCandidates = async () => {
+    const querySnapshot = await getDocs(collection(db, "candidates"));
+    const candidateList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    console.log("Fetched Candidates:", candidateList);
+    setCandidates(candidateList);
+  };
+
   // Function to convert number to words
   const numberToWords = (num) => {
     const single = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
@@ -64,7 +73,6 @@ function AppointmentLetter() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-
     if (name === "company") {
       const selectedCompany = companies.find(company => company.name === value);
       if (selectedCompany) {
@@ -72,18 +80,27 @@ function AppointmentLetter() {
           ...formData,
           companyName: selectedCompany.name,
           companyAddressLine1: selectedCompany.address,
-         
-         
           companyEmail: selectedCompany.email,
           companyPhone: selectedCompany.mobile,
           companyWebsite: selectedCompany.website,
-          companyLogo:selectedCompany.logo,
-          // Add any additional fields as needed
+          companyLogo: selectedCompany.logo,
         });
       }
-    }
-    if (name === 'ctc') {
-      // Convert CTC to words when CTC changes
+    } else if (name === "employeeName") {
+      const selectedCandidate = candidates.find(candidate => candidate.candidateName === value);
+      if (selectedCandidate) {
+        setFormData(prev => ({
+          ...prev,
+          employeeName: selectedCandidate.candidateName,
+          designation: selectedCandidate.designation,
+          department: selectedCandidate.department,
+          location: selectedCandidate.location,
+          joiningDate: selectedCandidate.DateOfJoining,
+          ctc: selectedCandidate.packageLPA,
+          ctcInWords: `Rupees ${numberToWords(selectedCandidate.packageLPA * 100000)} Only`,
+        }));
+      }
+    } else if (name === 'ctc') {
       const ctcValue = parseFloat(value);
       const ctcInWords = !isNaN(ctcValue) ? 
         `Rupees ${numberToWords(ctcValue * 100000)} Only` : '';
@@ -141,17 +158,38 @@ function AppointmentLetter() {
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div className="form-group">
       <label className="block mb-2 text-sm font-medium text-gray-700">Employee Name</label>
-      <input
-        type="text"
+      <select
         name="employeeName"
         value={formData.employeeName}
         onChange={handleInputChange}
         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        placeholder="Enter employee name"
-      />
+      >
+        <option value="">Select Employee</option>
+        {candidates.map((candidate) => (
+          <option key={candidate.id} value={candidate.candidateName}>
+            {candidate.candidateName}
+          </option>
+        ))}
+      </select>
     </div>
-
     <div className="form-group">
+      <label className="block mb-2 text-sm font-medium text-gray-700">Company</label>
+      <select
+        name="company"
+        onChange={handleInputChange}
+        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      >
+                <option value="">Select Company</option>
+
+        {companies.map((company) => (
+          
+          <option key={company.id} value={company.name}>
+            {company.name}
+          </option>
+        ))}
+      </select>
+    </div>
+    {/* <div className="form-group">
       <label className="block mb-2 text-sm font-medium text-gray-700">Address</label>
       <textarea
         name="address"
@@ -161,8 +199,8 @@ function AppointmentLetter() {
         rows="3"
         placeholder="Enter address"
       />
-    </div>
-
+    </div> */}
+{/* 
     <div className="form-group">
       <label className="block mb-2 text-sm font-medium text-gray-700">Joining Date</label>
       <input
@@ -172,9 +210,9 @@ function AppointmentLetter() {
         onChange={handleInputChange}
         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       />
-    </div>
+    </div> */}
 
-    <div className="form-group">
+    {/* <div className="form-group">
       <label className="block mb-2 text-sm font-medium text-gray-700">Designation</label>
       <input
         type="text"
@@ -184,9 +222,9 @@ function AppointmentLetter() {
         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         placeholder="Enter designation"
       />
-    </div>
+    </div> */}
 
-    <div className="form-group">
+    {/* <div className="form-group">
       <label className="block mb-2 text-sm font-medium text-gray-700">Department</label>
       <input
         type="text"
@@ -196,7 +234,7 @@ function AppointmentLetter() {
         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         placeholder="Enter department"
       />
-    </div>
+    </div> */}
 
     <div className="form-group">
       <label className="block mb-2 text-sm font-medium text-gray-700">Reporting Authority</label>
@@ -210,7 +248,7 @@ function AppointmentLetter() {
       />
     </div>
 
-    <div className="form-group">
+    {/* <div className="form-group">
       <label className="block mb-2 text-sm font-medium text-gray-700">CTC (in Lakhs per annum)</label>
       <input
         type="number"
@@ -224,9 +262,9 @@ function AppointmentLetter() {
       {formData.ctcInWords && (
         <p className="mt-2 text-sm text-gray-600">{formData.ctcInWords}</p>
       )}
-    </div>
+    </div> */}
 
-    <div className="form-group">
+    {/* <div className="form-group">
       <label className="block mb-2 text-sm font-medium text-gray-700">Location</label>
       <input
         type="text"
@@ -236,7 +274,7 @@ function AppointmentLetter() {
         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         placeholder="Enter location"
       />
-    </div>
+    </div> */}
 
     {/* Bank Details Section */}
     <div className="form-group">
@@ -287,20 +325,7 @@ function AppointmentLetter() {
       />
     </div>
 
-    <div className="form-group">
-      <label className="block mb-2 text-sm font-medium text-gray-700">Company</label>
-      <select
-        name="company"
-        onChange={handleInputChange}
-        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-      >
-        {companies.map((company) => (
-          <option key={company.id} value={company.name}>
-            {company.name}
-          </option>
-        ))}
-      </select>
-    </div>
+   
   </div>
 
   <div className="mt-6 flex justify-end">
@@ -322,7 +347,7 @@ function AppointmentLetter() {
             <div className="letter-header">
               <div className="logo-section">
                 <img src={formData.companyLogo} alt={formData.companyName}  className="company-logo" />
-                <p className="brilliance">{formData.companyName}</p>
+                <p className="brilliance capitalize">{formData.companyName}</p>
               </div>
               <p className="letter-date">17 December 2020</p>
             </div>
@@ -330,14 +355,14 @@ function AppointmentLetter() {
             <div className="letter-content">
               <p className="to-section">To,</p>
 
-              <div className="address-section">
+              <div className="address-section capitalize">
                 <p>{formData.employeeName || '[Employee Name]'}</p>
                 <p>{formData.address || '[Address]'}</p>
               </div>
 
               <p className="subject-line">Subject: Appointment Letter</p>
 
-              <p>Dear {formData.employeeName || '[Employee Name]'},</p>
+              <p className="capitalize">Dear {formData.employeeName || '[Employee Name]'},</p>
 
               <p>
                 We welcome you to Nitor Infotech Pvt.Ltd. Your appointment is
@@ -356,15 +381,15 @@ function AppointmentLetter() {
                     </tr>
                     <tr>
                       <td>Designation</td>
-                      <td>{formData.designation || '[Designation]'}</td>
+                      <td className="capitalize">{formData.designation || '[Designation]'}</td>
                     </tr>
                     <tr>
                       <td>Department</td>
-                      <td>{formData.department || '[Department]'}</td>
+                      <td className="capitalize">{formData.department || '[Department]'}</td>
                     </tr>
                     <tr>
                       <td>Reporting Authority</td>
-                      <td>{formData.reportingAuthority || '[Authority]'}</td>
+                      <td className="capitalize">{formData.reportingAuthority || '[Authority]'}</td>
                     </tr>
                     <tr>
                       <td>CTC (break up as per Annexure)</td>

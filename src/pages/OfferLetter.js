@@ -10,6 +10,7 @@ import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase
 function OfferLetter() {
   const containerRef = React.useRef(null);
   const [companies, setCompanies] = useState([]);
+  const [candidates, setCandidates] = useState([]);
   const [formData, setFormData] = useState({
     employeeName: "",
     joiningDate: "",
@@ -51,6 +52,7 @@ function OfferLetter() {
   };
   useEffect(() => {
     fetchCompanies();
+    fetchCandidates();
   }, []);
 
   const fetchCompanies = async () => {
@@ -61,6 +63,14 @@ function OfferLetter() {
     console.log(companyList);
     setCompanies(companyList);
   };
+
+  const fetchCandidates = async () => {
+    const querySnapshot = await getDocs(collection(db, "candidates"));
+    const candidateList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    console.log("Fetched Candidates:", candidateList);
+    setCandidates(candidateList);
+  };
+
   // Calculate salary components based on LPA
   const calculateSalaryComponents = (lpa) => {
     const annualSalary = parseFloat(lpa) * 100000;
@@ -116,8 +126,20 @@ function OfferLetter() {
           // Add any additional fields as needed
         });
       }
-    }
-    if (name === 'lpa') {
+    } else if (name === "employeeName") {
+      const selectedCandidate = candidates.find(candidate => candidate.candidateName === value);
+      if (selectedCandidate) {
+        const components = calculateSalaryComponents(selectedCandidate.packageLPA);
+        setFormData(prev => ({
+          ...prev,
+          employeeName: selectedCandidate.candidateName,
+          designation: selectedCandidate.designation,
+          joiningDate: selectedCandidate.DateOfJoining,
+          lpa: selectedCandidate.packageLPA,
+          ...components
+        }));
+      }
+    } else if (name === 'lpa') {
       const components = calculateSalaryComponents(value);
       setFormData(prev => ({
         ...prev,
@@ -184,55 +206,26 @@ function OfferLetter() {
           {/* Employee Name */}
           <div className="form-group">
             <label className="block mb-2 text-sm font-medium text-gray-700">Employee Name</label>
-            <input
-              type="text"
+            <select
               name="employeeName"
               value={formData.employeeName}
               onChange={handleInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter employe name"
-            />
+            >
+              <option value="">Select Employee</option>
+              {candidates.map((candidate) => (
+                <option key={candidate.id} value={candidate.candidateName}>
+                  {candidate.candidateName}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Joining Date */}
-          <div className="form-group">
-            <label className="block mb-2 text-sm font-medium text-gray-700">Joining Date</label>
-            <input
-              type="date"
-              name="joiningDate"
-              value={formData.joiningDate}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* Designation */}
-          <div className="form-group">
-            <label className="block mb-2 text-sm font-medium text-gray-700">Designation</label>
-            <input
-              type="text"
-              name="designation"
-              value={formData.designation}
-              onChange={handleInputChange}
-              placeholder="Enter Designation"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+          
 
           {/* Total Salary (in Lakhs) */}
-          <div className="form-group">
-            <label className="block mb-2 text-sm font-medium text-gray-700">Total Salary (in Lakhs)</label>
-            <input
-              type="number"
-              name="lpa"
-              value={formData.lpa}
-              onChange={handleInputChange}
-              placeholder="Enter CTC in Lakhs"
-              step="0.1"
-              min="0"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+         
 
           {/* Company Selection */}
           <div className="form-group">
@@ -242,6 +235,7 @@ function OfferLetter() {
               onChange={handleInputChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
+              <option value="">Select Company</option>
               {companies.map((company) => (
                 <option key={company.id} value={company.name}>
                   {company.name}
@@ -270,10 +264,10 @@ function OfferLetter() {
           <div className="offer-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
             <div className="letter-header">
               <div className="company-info">
-                <h1 className="company-name">
+                <h1 className="company-name capitalize">
                 {formData.companyName}
                 </h1>
-                <p className="company-address">
+                <p className="company-address capitalize">
                   {/* Office No -309, 3<sup>rd</sup> Floor, Navale Icon, Near Navale
                   Bridge, Narhe
                   <br />
@@ -291,7 +285,7 @@ function OfferLetter() {
 
             <div className="letter-content">
               <p className="date">Date: {new Date().toLocaleDateString()}</p>
-              <p className="employee-name">Dear {formData.employeeName || '[Employee Name]'},</p>
+              <p className="employee-name capitalize">Dear {formData.employeeName || '[Employee Name]'},</p>
 
               <p className="letter-paragraph">
                 We pleased in appointing you as {formData.designation} in MyClan
@@ -337,7 +331,7 @@ function OfferLetter() {
             </div>
 
             <div className="contact-section">
-              <p className="font-semibold">Contact Us:</p>
+              <p className="font-semibold capitalize  ">Contact Us:</p>
               <p>Email – {formData.companyEmail} Contact No – {formData.companyPhone}</p>
               <p>Website – {formData.companyWebsite}</p>
             </div>
@@ -347,10 +341,10 @@ function OfferLetter() {
           <div className="offer-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
             <div className="letter-header">
               <div className="company-info">
-                <h1 className="company-name">
+                <h1 className="company-name capitalize">
                 {formData.companyName}
                 </h1>
-                <p className="company-address">
+                <p className="company-address capitalize ">
                 {formData.companyAddressLine1}
                 </p>
               </div>

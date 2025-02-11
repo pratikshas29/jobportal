@@ -11,6 +11,7 @@ function Home() {
     { title: "Appraisal Letter", path: "/appraisal-letter", icon: <Clipboard size={32} /> },
     // { title: "Increment Letter", path: "/increment-letter", icon: <Briefcase size={32} /> },
     { title: "Manage Company", path: "/manage-company", icon: <Briefcase size={32} /> },
+    { title: "Manage Candidates", path: "/manage-student", icon: <User size={32} /> },
   ];
 
   return (

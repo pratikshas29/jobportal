@@ -10,6 +10,7 @@ import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase
 function RelievingLetter() {
   const containerRef = React.useRef(null);
   const [companies, setCompanies] = useState([]);
+  const [candidates, setCandidates] = useState([]);
 
   const [formData, setFormData] = useState({
     employeeName: "",
@@ -20,18 +21,28 @@ function RelievingLetter() {
   });
   useEffect(() => {
     fetchCompanies();
+    fetchCandidates();
   }, []);
 
   const fetchCompanies = async () => {
-
     const querySnapshot = await getDocs(collection(db, "companies"));
     const companyList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     
     console.log(companyList);
     setCompanies(companyList);
   };
+
+  const fetchCandidates = async () => {
+    const querySnapshot = await getDocs(collection(db, "candidates"));
+    const candidateList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    
+    console.log(candidateList);
+    setCandidates(candidateList);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     if (name === "company") {
       const selectedCompany = companies.find(company => company.name === value);
       if (selectedCompany) {
@@ -39,21 +50,35 @@ function RelievingLetter() {
           ...formData,
           companyName: selectedCompany.name,
           companyAddressLine1: selectedCompany.address,
-         
-         
           companyEmail: selectedCompany.email,
           companyPhone: selectedCompany.mobile,
           companyWebsite: selectedCompany.website,
-          companyLogo:selectedCompany.logo,
-          // Add any additional fields as needed
+          companyLogo: selectedCompany.logo,
         });
       }
+    } else if (name === "employeeName") {
+      const selectedCandidate = candidates.find(candidate => candidate.candidateName === value);
+      if (selectedCandidate) {
+        setFormData(prev => ({
+          ...prev,
+          employeeName: selectedCandidate.candidateName,
+          employeeCode: selectedCandidate.employeeCode,
+          designation: selectedCandidate.designation,
+          department: selectedCandidate.department,
+          dateOfJoining: selectedCandidate.dateOfJoining,
+          lastWorkingDate: selectedCandidate.lastWorkingDate,
+          location: selectedCandidate.location,
+          inhandSalary: selectedCandidate.inhandSalary,
+          packageLPA: selectedCandidate.packageLPA,
+          panNo: selectedCandidate.panNo
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
-
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
   };
 
   const handleDownload = async () => {
@@ -97,38 +122,22 @@ function RelievingLetter() {
   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div className="form-group">
       <label className="block mb-1 text-sm font-medium text-gray-700">Employee Name</label>
-      <input
-        type="text"
+      <select
         name="employeeName"
-        value={formData.employeeName}
         onChange={handleInputChange}
         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        placeholder="Enter employee name"
-      />
+      >
+        <option value="">Select Employee</option>
+        {candidates.map((candidate) => (
+          <option key={candidate.id} value={candidate.candidateName}>
+            {candidate.candidateName}
+          </option>
+        ))}
+      </select>
     </div>
 
-    <div className="form-group">
-      <label className="block mb-1 text-sm font-medium text-gray-700">Designation</label>
-      <input
-        type="text"
-        name="designation"
-        value={formData.designation}
-        onChange={handleInputChange}
-        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        placeholder="Enter designation"
-      />
-    </div>
+   
 
-    <div className="form-group">
-      <label className="block mb-1 text-sm font-medium text-gray-700">Last Working Date</label>
-      <input
-        type="date"
-        name="lastWorkingDate"
-        value={formData.lastWorkingDate}
-        onChange={handleInputChange}
-        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-      />
-    </div>
 
     <div className="form-group">
       <label className="block mb-1 text-sm font-medium text-gray-700">Employee Sign Date</label>
@@ -161,6 +170,7 @@ function RelievingLetter() {
         onChange={handleInputChange}
         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
+        <option value="">Select Company</option>
         {companies.map((company) => (
           <option key={company.id} value={company.name}>
             {company.name}
@@ -168,6 +178,8 @@ function RelievingLetter() {
         ))}
       </select>
     </div>
+
+   
   </div>
 
   <div className="mt-6 flex justify-end">
@@ -188,7 +200,7 @@ function RelievingLetter() {
             <div className="letter-header">
               <div className="logo-section">
                 <img  src={formData.companyLogo} alt={formData.companyName} className="company-logo" />
-                <p className="brilliance">{formData.companyName}</p>
+                <p className="brilliance capitalize">{formData.companyName}</p>
               </div>
             </div>
 
@@ -197,11 +209,11 @@ function RelievingLetter() {
 
               <h2 className="letter-title">Relieving Letter</h2>
 
-              <p className="employee-name">{formData.employeeName}</p>
+              <p className="employee-name capitalize">{formData.employeeName}</p>
 
-              <p>Dear {formData.employeeName},</p>
+              <p className="capitalize">Dear {formData.employeeName},</p>
 
-              <p className="opening-para">
+              <p className="opening-para capitalize">
                 We are relieving you from your duties as {formData.designation} end of the day {formData.lastWorkingDate}.
               </p>
 

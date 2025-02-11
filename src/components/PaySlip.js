@@ -32,9 +32,9 @@ const PaySlip = ({ employeeData, companyDetails }) => {
                         <img src="${companyDetails.logo}" alt="Company Logo" class="company-logo" />
                     </div>
                     <div class="company-details">
-                        <h2>${companyDetails.name || ""}</h2>
-                        <p>${companyDetails.address || ""}</p>
-                        <p>${companyDetails.city || ""}</p>
+                        <h2 class="capitalize">${companyDetails.name || ""}</h2>
+                        <p class="capitalize">${companyDetails.address || ""}</p>
+                        <p class="capitalize">${companyDetails.city || ""}</p>
                         <p>Phone: ${companyDetails.phone || ""}</p>
                         <p>${companyDetails.website || ""}</p>
                     </div>
@@ -53,13 +53,13 @@ const PaySlip = ({ employeeData, companyDetails }) => {
                     </div>
                     <div class="emp-detail">
                         <span class="label">Name</span>
-                        <span class="value">${
+                        <span class="value capitalize">${
                           companyDetails.employeeName || ""
                         }</span>
                     </div>
                     <div class="emp-detail">
                         <span class="label">Designation</span>
-                        <span class="value">${
+                        <span class="value capitalize">${
                           companyDetails.designation || ""
                         }</span>
                     </div>
