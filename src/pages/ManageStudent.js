@@ -97,7 +97,7 @@ const ManageStudent = () => {
                 <div>
                   <p className="text-lg font-semibold capitalize">{candidate.candidateName}</p>
                   <p className="text-gray-600 capitalize">{candidate.designation}</p>
-                  <p className="text-gray-600 capitalize">Joining Date: {candidate.DateOfJoining ? formatDate(candidate.DateOfJoining) : "N/A"}</p>
+                  {/* <p className="text-gray-600 capitalize">Joining Date: {candidate.DateOfJoining ? formatDate(candidate.DateOfJoining) : "N/A"}</p> */}
                 </div>
                 <div className="flex space-x-2">
                   <button
