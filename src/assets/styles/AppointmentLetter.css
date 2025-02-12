@@ -1,5 +1,5 @@
 .appointment-letter-page {
-    font-family: Arial, sans-serif;
+    /* font-family: Arial, sans-serif; */
     font-size: 12px;
     line-height: 1.6;
     color: #000000;
@@ -12,7 +12,15 @@
     box-sizing: border-box;
     page-break-after: always;
 }
-
+.footer {
+    position: absolute;
+    bottom: 40px;
+    left: 60px;
+    right: 60px;
+    text-align: left;
+    /* border-top: 1px solid #000; */
+    padding-top: 20px;
+}
 .company-logo {
     font-size: 24px;
     font-weight: bold;

@@ -1,5 +1,5 @@
 .appraisal-letter-page {
-    font-family: Arial, sans-serif;
+    
     font-size: 12px;
     line-height: 1.6;
     color: #000000;
@@ -20,7 +20,7 @@
 }
 
 .company-name {
-    color: #FF6B00;
+    /* color: #FF6B00; */
     font-size: 16px;
     font-weight: bold;
     margin-bottom: 5px;
@@ -111,7 +111,7 @@
     left: 60px;
     right: 60px;
     text-align: center;
-    border-top: 1px solid #000;
+    /* border-top: 1px solid #000; */
     padding-top: 20px;
 }
 

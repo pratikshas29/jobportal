@@ -54,6 +54,9 @@ function RelievingLetter() {
           companyPhone: selectedCompany.mobile,
           companyWebsite: selectedCompany.website,
           companyLogo: selectedCompany.logo,
+          companyHR:selectedCompany.hrName,
+          companyColor:selectedCompany.serverColor,
+
         });
       }
     } else if (name === "employeeName") {
@@ -103,6 +106,15 @@ function RelievingLetter() {
     pdf.save("relieving-letter.pdf");
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(date); // "05 Feb 2025"
+  };
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
     <div className="max-w-[210mm] mx-auto">
@@ -142,7 +154,7 @@ function RelievingLetter() {
     <div className="form-group">
       <label className="block mb-1 text-sm font-medium text-gray-700">Employee Sign Date</label>
       <input
-        type="text"
+        type="date"
         name="employeeSignDate"
         value={formData.employeeSignDate}
         onChange={handleInputChange}
@@ -197,15 +209,31 @@ function RelievingLetter() {
         {/* Hidden PDF Content */}
         <div ref={containerRef} style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
           <div className="relieving-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
-            <div className="letter-header">
-              <div className="logo-section">
-                <img  src={formData.companyLogo} alt={formData.companyName} className="company-logo" />
-                <p className="brilliance capitalize">{formData.companyName}</p>
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
+              <div>
+                <h1 className="company-name" style={{ color: formData.companyColor }}>{formData.companyName}</h1>
+                <p className="company-address">
+                  {formData.companyAddressLine1}
+                  <br />
+                  
+                 Phone: {formData.companyPhone}
+                  {/* {formData.companyCity} - {formData.companyPincode}, ({formData.companyState}) INDIA. */}
+                  <br/>
+                  {formData.companyWebsite}
+                </p>
               </div>
+              <img src={formData.companyLogo} alt={formData.companyName} className="company-logo" />
             </div>
 
             <div className="letter-content">
-              <p className="letter-date">{formData.lastWorkingDate}</p>
+              <p className="letter-date">{formatDate(formData.lastWorkingDate)}</p>
 
               <h2 className="letter-title">Relieving Letter</h2>
 
@@ -214,7 +242,7 @@ function RelievingLetter() {
               <p className="capitalize">Dear {formData.employeeName},</p>
 
               <p className="opening-para capitalize">
-                We are relieving you from your duties as {formData.designation} end of the day {formData.lastWorkingDate}.
+                We are relieving you from your duties as {formData.designation} end of the day {formatDate(formData.lastWorkingDate)}.
               </p>
 
               <p>
@@ -280,46 +308,48 @@ function RelievingLetter() {
                   from Nitor.
                 </p>
               </div>
+              <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
 
-              <div className="footer">
-                <p>{formData.companyName}</p>
-                <p>
-              {formData.companyAddressLine1}
-                </p>
-                <p>{formData.companyWebsite}</p>
-              </div>
 
-              <div className="signature-section">
-                <div className="date-place">
-                  <p>Date: {formData.employeeSignDate || "_________________"}</p>
-                  <p>Place: {formData.employeeSignPlace}</p>
-                </div>
 
-                <div className="signatures">
-                  <div className="employee-sign">
-                    <p>Sign</p>
-                    <p className="sign-name">{formData.employeeName}</p>
-                  </div>
-
-                  <div className="company-sign">
-                    <p>{formData.companyName}</p>
-                    <p className="sign-name">Rohini Wagh</p>
-                    <p className="designation">VP & Head – People Function</p>
-                  </div>
-                </div>
-              </div>
+            
             </div>
           </div>
 
           <div className="relieving-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
-            <div className="letter-header">
-              <div className="logo-section">
-                <img
-                src={formData.companyLogo} alt={formData.companyName}
-                  className="company-logo"
-                />
-                <p className="brilliance">{formData.companyName}</p>
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
+              <div>
+                <h1 className="company-name" style={{ color: formData.companyColor }}>{formData.companyName}</h1>
+                <p className="company-address">
+                  {formData.companyAddressLine1}
+                  <br />
+                  
+                 Phone: {formData.companyPhone}
+                  {/* {formData.companyCity} - {formData.companyPincode}, ({formData.companyState}) INDIA. */}
+                  <br/>
+                  {formData.companyWebsite}
+                </p>
               </div>
+              <img src={formData.companyLogo} alt={formData.companyName} className="company-logo" />
             </div>
 
             <div className="letter-content">
@@ -345,31 +375,42 @@ function RelievingLetter() {
               <div className="signature-section">
                 <div className="date-place">
                   <p>Date: _________________</p>
-                  <p>Place: Pune</p>
+                  <p className="capitalize">Place: {formData.employeeSignPlace}</p>
                 </div>
 
                 <div className="signatures">
                   <div className="employee-sign">
                     <p>Sign</p>
-                    <p className="sign-name">Viraj Kadam</p>
+                    <p className="sign-name capitalize">{formData.employeeName}</p>
                   </div>
 
                   <div className="company-sign">
                     <p>{formData.companyName}</p>
 
-                    <p className="sign-name">Rohini Wagh</p>
-                    <p className="designation">VP & Head – People Function</p>
+                    <p className="sign-name capitalize">{formData.companyHR}</p>
+                    <p className="designation">Head - HR Dept</p>
                   </div>
                 </div>
               </div>
 
-              <div className="footer">
-                <p>{formData.companyName}</p>
-                <p>
-                {formData.companyAddressLine1}
-                </p>
-                <p>{formData.companyWebsite}</p>
-              </div>
+              <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
+
+
+
+
+
             </div>
           </div>
         </div>

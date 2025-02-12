@@ -12,6 +12,7 @@ function AppointmentLetter() {
   const containerRef = React.useRef(null);
   const [companies, setCompanies] = useState([]);
   const [candidates, setCandidates] = useState([]);
+  const [showPF, setShowPF] = useState(false);
   const [formData, setFormData] = useState({
     employeeName: " ",
     address: " ",
@@ -70,6 +71,72 @@ function AppointmentLetter() {
     return convert(Math.round(num));
   };
 
+  // Add this function to calculate salary components
+  const calculateSalaryComponents = (lpa) => {
+    const monthlyMultiplier = 1/12;
+    const annual = lpa * 100000; // Convert LPA to annual amount
+    
+    // Basic - 50% of CTC
+    const basic = annual * 0.5;
+    
+    // HRA - 40% of Basic
+    const hra = basic * 0.4;
+    
+    // Education Allowance - Fixed
+    const educationAllowance = 2400;
+    
+    // Monthly Reimbursement - Fixed
+    const monthlyReimbursement = 36000;
+    
+    // LTA - 8% of Basic
+    const lta = basic * 0.08;
+    
+    // Statutory Bonus - 8.33% of Basic, capped at 20991
+    const statutoryBonus = Math.min(basic * 0.0833, 20991);
+    
+    // Calculate remaining amount for Special Allowance
+    const subTotal = basic + hra + educationAllowance + monthlyReimbursement + lta + statutoryBonus;
+    
+    // Employer Contributions
+    const gratuity = basic * 0.0417; // 4.17% of basic
+    const monthlyWellness = 1200;
+    const healthInsurance = annual * 0.00429; // 0.429% of CTC
+    const employerPF = Math.min(basic * 0.12, 21600); // 12% of basic, capped at 21600
+    
+    // Special Allowance is the balancing amount
+    const specialAllowance = annual - subTotal - gratuity - monthlyWellness - healthInsurance - employerPF;
+    
+    return {
+      monthly: {
+        basic: basic * monthlyMultiplier,
+        hra: hra * monthlyMultiplier,
+        educationAllowance: educationAllowance * monthlyMultiplier,
+        monthlyReimbursement: monthlyReimbursement * monthlyMultiplier,
+        lta: lta * monthlyMultiplier,
+        statutoryBonus: statutoryBonus * monthlyMultiplier,
+        specialAllowance: specialAllowance * monthlyMultiplier,
+        gratuity: gratuity * monthlyMultiplier,
+        monthlyWellness: monthlyWellness * monthlyMultiplier,
+        healthInsurance: healthInsurance * monthlyMultiplier,
+        employerPF: employerPF * monthlyMultiplier
+      },
+      annual: {
+        basic: basic,
+        hra: hra,
+        educationAllowance: educationAllowance,
+        monthlyReimbursement: monthlyReimbursement,
+        lta: lta,
+        statutoryBonus: statutoryBonus,
+        specialAllowance: specialAllowance,
+        gratuity: gratuity,
+        monthlyWellness: monthlyWellness,
+        healthInsurance: healthInsurance,
+        employerPF: employerPF,
+        total: annual
+      }
+    };
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
@@ -84,11 +151,15 @@ function AppointmentLetter() {
           companyPhone: selectedCompany.mobile,
           companyWebsite: selectedCompany.website,
           companyLogo: selectedCompany.logo,
+          companyHR:selectedCompany.hrName,
+          companyColor:selectedCompany.serverColor,
+
         });
       }
     } else if (name === "employeeName") {
       const selectedCandidate = candidates.find(candidate => candidate.candidateName === value);
       if (selectedCandidate) {
+        const salaryComponents = calculateSalaryComponents(selectedCandidate.packageLPA);
         setFormData(prev => ({
           ...prev,
           employeeName: selectedCandidate.candidateName,
@@ -98,6 +169,7 @@ function AppointmentLetter() {
           joiningDate: selectedCandidate.DateOfJoining,
           ctc: selectedCandidate.packageLPA,
           ctcInWords: `Rupees ${numberToWords(selectedCandidate.packageLPA * 100000)} Only`,
+          salaryComponents: salaryComponents
         }));
       }
     } else if (name === 'ctc') {
@@ -137,6 +209,108 @@ function AppointmentLetter() {
     }
 
     pdf.save("appointment-letter.pdf");
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString || isNaN(new Date(dateString).getTime())) {
+      return ""; // Return an empty string if the date is invalid
+    }
+  
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(date); // "05 Feb 2025"
+  };
+  
+  const renderSalaryTable = () => {
+    if (!formData.salaryComponents) return null;
+    
+    const { monthly, annual } = formData.salaryComponents;
+    
+    return (
+      <table>
+        <thead>
+          <tr>
+            <th>EARNINGS</th>
+            <th>MONTHLY</th>
+            <th>YEARLY</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Basic</td>
+            <td>{monthly.basic.toFixed(2)}</td>
+            <td>{annual.basic.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>Education Allowance</td>
+            <td>{monthly.educationAllowance.toFixed(2)}</td>
+            <td>{annual.educationAllowance.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>HRA</td>
+            <td>{monthly.hra.toFixed(2)}</td>
+            <td>{annual.hra.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>Monthly Reimbursement</td>
+            <td>{monthly.monthlyReimbursement.toFixed(2)}</td>
+            <td>{annual.monthlyReimbursement.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>Travel Reimbursement (LTA)</td>
+            <td>{monthly.lta.toFixed(2)}</td>
+            <td>{annual.lta.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>Statutory Bonus</td>
+            <td>{monthly.statutoryBonus.toFixed(2)}</td>
+            <td>{annual.statutoryBonus.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>Special Allowance</td>
+            <td>{monthly.specialAllowance.toFixed(2)}</td>
+            <td>{annual.specialAllowance.toFixed(2)}</td>
+          </tr>
+          <tr className="sub-total">
+            <td>SUB TOTAL</td>
+            <td>{(annual.total/12).toFixed(2)}</td>
+            <td>{annual.total.toFixed(2)}</td>
+          </tr>
+          {showPF && (
+            <>
+              <tr>
+                <td>PF - Employer</td>
+                <td>{monthly.employerPF.toFixed(2)}</td>
+                <td>{annual.employerPF.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td>Employee Gratuity contribution</td>
+                <td>{monthly.gratuity.toFixed(2)}</td>
+                <td>{annual.gratuity.toFixed(2)}</td>
+              </tr>
+            </>
+          )}
+          <tr>
+            <td>Monthly Wellness</td>
+            <td>{monthly.monthlyWellness.toFixed(2)}</td>
+            <td>{annual.monthlyWellness.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td>Health Insurance</td>
+            <td>{monthly.healthInsurance.toFixed(2)}</td>
+            <td>{annual.healthInsurance.toFixed(2)}</td>
+          </tr>
+          <tr className="total">
+            <td>TOTAL</td>
+            <td>{(annual.total/12).toFixed(2)}</td>
+            <td>{annual.total.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+    );
   };
 
   return (
@@ -277,7 +451,7 @@ function AppointmentLetter() {
     </div> */}
 
     {/* Bank Details Section */}
-    <div className="form-group">
+    {/* <div className="form-group">
       <label className="block mb-2 text-sm font-medium text-gray-700">Bank Name</label>
       <input
         type="text"
@@ -323,18 +497,39 @@ function AppointmentLetter() {
         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         placeholder="Enter branch name"
       />
-    </div>
+    </div> */}
 
-   
+
+
+
   </div>
-
+  <div className="form-group mt-4 flex items-center space-x-3 border p-4 rounded-lg bg-gray-50">
+  <input
+    type="checkbox"
+    id="include-pf"
+    checked={showPF}
+    onChange={(e) => setShowPF(e.target.checked)}
+    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+  />
+  <label 
+    htmlFor="include-pf" 
+    className="text-gray-700 font-medium cursor-pointer select-none flex items-center"
+  >
+    <span>Include PF in Salary Structure</span>
+    {showPF && (
+      <span className="ml-2 text-sm text-green-600">
+        (PF and Gratuity components will be shown in salary breakup)
+      </span>
+    )}
+  </label>
+</div>
   <div className="mt-6 flex justify-end">
     <button
       onClick={handleDownload}
       className="download-btn flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 shadow-md transition duration-200"
     >
       <Download size={20} className="mr-3" />
-      <span>Download Offer Letter</span>
+      <span>Download Appointment Letter</span>
     </button>
   </div>
 </div>
@@ -344,12 +539,28 @@ function AppointmentLetter() {
           {/* Hidden Preview Section */}
           <div ref={containerRef} style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
           <div className="appointment-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
-            <div className="letter-header">
-              <div className="logo-section">
-                <img src={formData.companyLogo} alt={formData.companyName}  className="company-logo" />
-                <p className="brilliance capitalize">{formData.companyName}</p>
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
+              <div className="company-info">
+                <h1 className="company-name capitalize" style={{ color: formData.companyColor }}>
+                {formData.companyName}
+                </h1>
+                <p className="company-address capitalize ">
+                {formData.companyAddressLine1}
+                <p>Phone: {formData.companyPhone} </p>
+                <p> {formData.companyWebsite}</p>
+                </p>
               </div>
-              <p className="letter-date">17 December 2020</p>
+              <img
+              src={formData.companyLogo} alt={formData.companyName}
+                className="company-logo"
+              />
             </div>
 
             <div className="letter-content">
@@ -364,8 +575,8 @@ function AppointmentLetter() {
 
               <p className="capitalize">Dear {formData.employeeName || '[Employee Name]'},</p>
 
-              <p>
-                We welcome you to Nitor Infotech Pvt.Ltd. Your appointment is
+              <p className="capitalize">
+                We welcome you to {formData.companyName} Your appointment is
                 subject to the Terms & Conditions contained in this letter &
                 Company policy.
               </p>
@@ -377,7 +588,7 @@ function AppointmentLetter() {
                   <tbody>
                     <tr>
                       <td>Date of joining as recorded</td>
-                      <td>{formData.joiningDate || '[Date]'}</td>
+                      <td>{formatDate(formData.joiningDate) || '[Date]'}</td>
                     </tr>
                     <tr>
                       <td>Designation</td>
@@ -423,26 +634,47 @@ function AppointmentLetter() {
                 </li>
               </ol>
 
-              <div className="footer-section">
-                <p>{formData.companyName}</p>
-                <p>
-                {formData.companyAddressLine1}
-                </p>
-                <p>{formData.companyWebsite}</p>
-              </div>
+             
             </div>
+            <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
           </div>
 
           {/* Page 2 */}
           <div className="appointment-letter-page">
-            <div className="letter-header">
-              <div className="logo-section">
-                <img
-                src={formData.companyLogo} alt={formData.companyName} 
-                  className="company-logo"
-                />
-                <p className="brilliance">{formData.companyName}</p>
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
+              <div className="company-info">
+                <h1 className="company-name capitalize" style={{ color: formData.companyColor }}>
+                {formData.companyName}
+                </h1>
+                <p className="company-address capitalize ">
+                {formData.companyAddressLine1}
+                <p>Phone: {formData.companyPhone} </p>
+                <p> {formData.companyWebsite}</p>
+                </p>
               </div>
+              <img
+              src={formData.companyLogo} alt={formData.companyName}
+                className="company-logo"
+              />
             </div>
 
             <div className="letter-content">
@@ -522,18 +754,45 @@ function AppointmentLetter() {
                 </li>
               </ol>
             </div>
+            <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
           </div>
 
           {/* Page 3 */}
           <div className="appointment-letter-page">
-            <div className="letter-header">
-              <div className="logo-section">
-                <img
-                src={formData.companyLogo} alt={formData.companyName} 
-                  className="company-logo"
-                />
-                <p className="brilliance">{formData.companyName} </p>
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
+              <div className="company-info">
+                <h1 className="company-name capitalize" style={{ color: formData.companyColor }}>
+                {formData.companyName}
+                </h1>
+                <p className="company-address capitalize ">
+                {formData.companyAddressLine1}
+                <p>Phone: {formData.companyPhone} </p>
+                <p> {formData.companyWebsite}</p>
+                </p>
               </div>
+              <img
+              src={formData.companyLogo} alt={formData.companyName}
+                className="company-logo"
+              />
             </div>
 
             <div className="letter-content">
@@ -605,19 +864,45 @@ function AppointmentLetter() {
                 </li>
               </ol>
             </div>
+            <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
           </div>
 
           {/* Page 4 */}
           <div className="appointment-letter-page">
-            <div className="letter-header">
-              <div className="logo-section">
-                <img
-                               src={formData.companyLogo} alt={formData.companyName} 
-
-                  className="company-logo"
-                />
-                <p className="brilliance">{formData.companyName} </p>
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
+              <div className="company-info">
+                <h1 className="company-name capitalize" style={{ color: formData.companyColor }}>
+                {formData.companyName}
+                </h1>
+                <p className="company-address capitalize ">
+                {formData.companyAddressLine1}
+                <p>Phone: {formData.companyPhone} </p>
+                <p> {formData.companyWebsite}</p>
+                </p>
               </div>
+              <img
+              src={formData.companyLogo} alt={formData.companyName}
+                className="company-logo"
+              />
             </div>
 
             <div className="letter-content">
@@ -692,21 +977,46 @@ function AppointmentLetter() {
                 </li>
               </ol>
             </div>
+            <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
           </div>
 
           {/* Page 5 */}
           <div className="appointment-letter-page">
-            <div className="letter-header">
-              <div className="logo-section">
-                <img
-                                 src={formData.companyLogo} alt={formData.companyName} 
-
-                  className="company-logo"
-                />
-                <p className="brilliance">{formData.companyName}</p>
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
+              <div className="company-info">
+                <h1 className="company-name capitalize" style={{ color: formData.companyColor }}>
+                {formData.companyName}
+                </h1>
+                <p className="company-address capitalize ">
+                {formData.companyAddressLine1}
+                <p>Phone: {formData.companyPhone} </p>
+                <p> {formData.companyWebsite}</p>
+                </p>
               </div>
+              <img
+              src={formData.companyLogo} alt={formData.companyName}
+                className="company-logo"
+              />
             </div>
-
             <div className="letter-content">
               <ol className="confidentiality-list" start="24">
                 <li>
@@ -768,19 +1078,45 @@ function AppointmentLetter() {
                 </li>
               </ol>
             </div>
+            <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
           </div>
 
           {/* Page 6 */}
           <div className="appointment-letter-page">
-            <div className="letter-header">
-              <div className="logo-section">
-                <img
-                                 src={formData.companyLogo} alt={formData.companyName} 
-
-                  className="company-logo"
-                />
-                <p className="brilliance">{formData.companyName}</p>
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
+              <div className="company-info">
+                <h1 className="company-name capitalize" style={{ color: formData.companyColor }}>
+                {formData.companyName}
+                </h1>
+                <p className="company-address capitalize ">
+                {formData.companyAddressLine1}
+                <p>Phone: {formData.companyPhone} </p>
+                <p> {formData.companyWebsite}</p>
+                </p>
               </div>
+              <img
+              src={formData.companyLogo} alt={formData.companyName}
+                className="company-logo"
+              />
             </div>
 
             <div className="letter-content">
@@ -827,106 +1163,57 @@ function AppointmentLetter() {
                 <p className="company-name">{formData.companyName}</p>
 
                 <div className="signature-section">
-                  <p className="signatory-name">Rohini Wagh</p>
+                  <p className="signatory-name capitalize">{formData.companyHR}</p>
                   <p className="signatory-designation">
-                    VP & Head – People Function
+                  Head - HR Dept
                   </p>
                 </div>
               </div>
             </div>
+            <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
           </div>
 
           {/* Page 7 - Salary Structure */}
           <div className="appointment-letter-page">
-            <div className="letter-header">
-              <div className="logo-section">
-                <img
-                              src={formData.companyLogo} alt={formData.companyName} 
-
-                  className="company-logo"
-                />
-                <p className="brilliance">{formData.companyName}</p>
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
+              <div className="company-info">
+                <h1 className="company-name capitalize" style={{ color: formData.companyColor }}>
+                {formData.companyName}
+                </h1>
+                <p className="company-address capitalize ">
+                {formData.companyAddressLine1}
+                <p>Phone: {formData.companyPhone} </p>
+                <p> {formData.companyWebsite}</p>
+                </p>
               </div>
+              <img
+              src={formData.companyLogo} alt={formData.companyName}
+                className="company-logo"
+              />
             </div>
 
             <div className="letter-content">
               <div className="salary-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>EARNINGS</th>
-                      <th>MONTHLY</th>
-                      <th>YEARLY</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Basic</td>
-                      <td>33,333.33</td>
-                      <td>4,00,000.00</td>
-                    </tr>
-                    <tr>
-                      <td>Education Allowance</td>
-                      <td>200.00</td>
-                      <td>2,400.00</td>
-                    </tr>
-                    <tr>
-                      <td>HRA</td>
-                      <td>13,333.33</td>
-                      <td>1,60,000.00</td>
-                    </tr>
-                    <tr>
-                      <td>Monthly Reimbursement</td>
-                      <td>3,000.00</td>
-                      <td>36,000.00</td>
-                    </tr>
-                    <tr>
-                      <td>Travel Reimbursement (LTA)</td>
-                      <td>2,776.67</td>
-                      <td>33,320.00</td>
-                    </tr>
-                    <tr>
-                      <td>Statutory Bonus</td>
-                      <td>1,749.25</td>
-                      <td>20,991.00</td>
-                    </tr>
-                    <tr>
-                      <td>Special Allowance</td>
-                      <td>8,698.08</td>
-                      <td>1,04,377.00</td>
-                    </tr>
-                    <tr className="sub-total">
-                      <td>SUB TOTAL</td>
-                      <td>63,090.66</td>
-                      <td>7,57,088.00</td>
-                    </tr>
-                    <tr>
-                      <td>Employee Gratuity contribution</td>
-                      <td>1,390.00</td>
-                      <td>16,680.00</td>
-                    </tr>
-                    <tr>
-                      <td>Monthly Wellness</td>
-                      <td>100.00</td>
-                      <td>1,200.00</td>
-                    </tr>
-                    <tr>
-                      <td>Health Insurance</td>
-                      <td>286.00</td>
-                      <td>3,432.00</td>
-                    </tr>
-                    <tr>
-                      <td>PF - Employer</td>
-                      <td>1,800.00</td>
-                      <td>21,600.00</td>
-                    </tr>
-                    <tr className="total">
-                      <td>TOTAL</td>
-                      <td>66,666.67</td>
-                      <td>8,00,000.00</td>
-                    </tr>
-                  </tbody>
-                </table>
+                {renderSalaryTable()}
               </div>
 
               <div className="salary-notes">
@@ -941,10 +1228,10 @@ function AppointmentLetter() {
                     The salary structure is liable for modification from time
                     to time.
                   </li>
-                  <li>
+                  {/* <li>
                     Company's contribution to PF is calculated considering
                     basic pay as Rs. 15000 or 12% of basic whichever is less.
-                  </li>
+                  </li> */}
                   <li>
                     Company will consider payments done towards LTA as taxable
                     income till the time you submit relevant bills to claim
@@ -956,13 +1243,27 @@ function AppointmentLetter() {
               </div>
 
               <div className="signature-section">
-                <p className="signatory-name">Rohini Wagh</p>
+                <p className="signatory-name capitalize">{formData.companyHR}</p>
                 <p className="signatory-designation">
-                  VP & Head – People Function
+                Head - HR Dept
                 </p>
               </div>
             </div>
+            <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
           </div>
+         
         </div>
    
     </div>

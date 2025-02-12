@@ -3,10 +3,15 @@ import "../components/CompanyDetailsForm.css";
 import { db } from "./firebase";
 import { collection, getDocs } from "firebase/firestore";
 
+
 const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
   const [showDetails, setShowDetails] = useState(false);
   const [candidates, setCandidates] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [attendance, setAttendance] = useState({
+    leaves: 0
+  });
 
   useEffect(() => {
     fetchCompanies();
@@ -60,42 +65,57 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
     annualCTC: "",
   });
 
-  const calculateSalary = (lpa) => {
-    const lpaNum = Number(lpa);
-    const annualSalary = lpaNum * 100000; // Convert LPA to annual amount
+  // Add this function to calculate days in month
+  const getDaysInMonth = (month) => {
+    const year = new Date().getFullYear();
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  // Update the calculateSalary function
+  const calculateSalary = (lpa, leaves = 0, selectedMonth) => {
+    // Convert inputs to numbers and provide defaults
+    const lpaNum = Number(lpa) || 0;
+    const leavesNum = Number(leaves) || 0;
+    const monthNum = Number(selectedMonth) || new Date().getMonth();
     
-    // Monthly Basic = 50% of CTC as per standard practice
-    const monthlyBasic = Math.round((annualSalary * 0.5) / 12);
+    // Get total days in selected month
+    const daysInMonth = getDaysInMonth(monthNum);
     
-    // HRA = 40% of Basic for metro cities (as per Income Tax Act)
-    const hra = Math.round(monthlyBasic * 0.4);
+    // Calculate base annual salary
+    const annualSalary = lpaNum * 100000;
     
-    // DA (Dearness Allowance) = 20% of Basic
-    const da = Math.round(monthlyBasic * 0.2);
+    // Calculate per day salary
+    const perDaySalary = (annualSalary / 12) / daysInMonth;
     
-    // Standard Deductions and Allowances
-    const conveyanceAllowance = 1600; // Fixed as per standard practice
-    const medicalAllowance = 1250; // Fixed as per standard practice
-    const lta = Math.round(monthlyBasic * 0.1); // Leave Travel Allowance = 10% of Basic
+    // Calculate effective monthly salary after leave deductions
+    const effectiveSalary = Math.max(0, (annualSalary / 12) - (perDaySalary * leavesNum));
     
-    // Calculate Special Allowance (remaining amount)
+    // Calculate components with null checks and Math.max to prevent negative values
+    const monthlyBasic = Math.max(0, Math.round(effectiveSalary * 0.5));
+    const hra = Math.max(0, Math.round(monthlyBasic * 0.4));
+    const da = Math.max(0, Math.round(monthlyBasic * 0.2));
+    const conveyanceAllowance = Math.max(0, Math.round(1600 * ((daysInMonth - leavesNum) / daysInMonth)));
+    const medicalAllowance = Math.max(0, Math.round(1250 * ((daysInMonth - leavesNum) / daysInMonth)));
+    const lta = Math.max(0, Math.round(monthlyBasic * 0.1));
+    
+    // Calculate allowances total
     const totalFixedAllowances = monthlyBasic + hra + da + conveyanceAllowance + medicalAllowance + lta;
-    const monthlyCTC = Math.round(annualSalary / 12);
-    const specialAllowance = Math.round(monthlyCTC - totalFixedAllowances);
+    const monthlyCTC = Math.max(0, Math.round(effectiveSalary));
+    const specialAllowance = Math.max(0, Math.round(monthlyCTC - totalFixedAllowances));
     
-    // Deductions
-    const epfEmployee = Math.min(monthlyBasic * 0.12, 1800); // 12% of Basic, capped at 15000 monthly salary
-    const epfEmployer = epfEmployee; // Employer contribution equals Employee contribution
-    const esi = monthlyCTC <= 21000 ? Math.round(monthlyCTC * 0.0075) : 0; // 0.75% if applicable
-    const professionalTax = 200; // Standard PT for most states
+    // Calculate deductions
+    const epfEmployee = Math.min(Math.max(0, monthlyBasic * 0.12), 1800);
+    const epfEmployer = epfEmployee;
+    const esi = monthlyCTC <= 21000 ? Math.max(0, Math.round(monthlyCTC * 0.0075)) : 0;
+    const professionalTax = Math.max(0, Math.round(200 * ((daysInMonth - leavesNum) / daysInMonth)));
     
-    // Calculate Gross and Net
+    // Calculate final amounts
     const grossSalary = monthlyBasic + hra + da + conveyanceAllowance + 
                        medicalAllowance + lta + specialAllowance;
-    
     const totalDeductions = epfEmployee + esi + professionalTax;
-    const netPay = grossSalary - totalDeductions;
-
+    const netPay = Math.max(0, grossSalary - totalDeductions);
+  
+    // Return values with toString() and null checks
     return {
       basic: monthlyBasic.toString(),
       hra: hra.toString(),
@@ -111,21 +131,37 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
       professionalTax: professionalTax.toString(),
       totalDeductions: totalDeductions.toString(),
       netPay: netPay.toString(),
-      
-      // Additional annual components
-      gratuity: Math.round((monthlyBasic * 15) / 26).toString(), // As per Gratuity Act
-      annualBonus: Math.round(monthlyBasic * 0.0833 * 12).toString(), // 8.33% of annual basic
-      
-      // Monthly CTC components
       monthlyCTC: monthlyCTC.toString(),
-      annualCTC: annualSalary.toString(),
+      daysInMonth: daysInMonth.toString(),
+      presentDays: (daysInMonth - leavesNum).toString(),
+      // Additional CTC components
+      gratuity: Math.max(0, Math.round((monthlyBasic * 15) / 26)).toString(),
+      annualBonus: Math.max(0, Math.round(monthlyBasic * 0.0833 * 12)).toString(),
+      annualCTC: annualSalary.toString()
     };
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
-    if (name === "company") {
+    
+    if (name === "month") {
+      const monthIndex = parseInt(value);
+      setSelectedMonth(monthIndex);
+      
+      // Recalculate salary with new month if candidate is selected
+      if (selectedCandidate) {
+        const calculatedValues = calculateSalary(
+          selectedCandidate.packageLPA,
+          attendance.leaves,
+          monthIndex
+        );
+        
+        setCompanyDetails(prev => ({
+          ...prev,
+          ...calculatedValues
+        }));
+      }
+    } else if (name === "company") {
       const selectedCompany = companies.find((company) => company.name === value);
       if (selectedCompany) {
         setCompanyDetails((prevState) => {
@@ -134,9 +170,11 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
             name: selectedCompany.name,
             address: selectedCompany.address,
             email: selectedCompany.email,
-            phone: selectedCompany.phone,
+            phone: selectedCompany.mobile
+            ,
             website: selectedCompany.website,
             logo: selectedCompany.logo,
+            color: selectedCompany.serverColor
           };
           onUpdateCompanyDetails(updatedDetails);
           return updatedDetails;
@@ -146,24 +184,26 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
       const candidate = candidates.find((c) => c.candidateName === value);
       if (candidate) {
         setSelectedCandidate(candidate);
-        const calculatedValues = calculateSalary(candidate.packageLPA);
-        setCompanyDetails((prevState) => {
-          const updatedDetails = {
-            ...prevState,
-            employeeName: candidate.candidateName,
-            empCode: candidate.employeeCode,
-            designation: candidate.designation,
-            pan: candidate.panNo,
-            location: candidate.location,
-            doj: candidate.DateOfJoining,
-            department: candidate.department,
-            lpa: candidate.packageLPA,
-            ...calculatedValues
-          };
-          setShowDetails(true);
-          onUpdateCompanyDetails(updatedDetails);
-          return updatedDetails;
-        });
+        const calculatedValues = calculateSalary(
+          candidate.packageLPA,
+          attendance.leaves,
+          selectedMonth
+        );
+        const updatedDetails = {
+          ...companyDetails,
+          employeeName: candidate.candidateName,
+          empCode: candidate.employeeCode || '',
+          designation: candidate.designation || '',
+          pan: candidate.panNo || '',
+          location: candidate.location || '',
+          doj: candidate.DateOfJoining || '',
+          department: candidate.department || '',
+          lpa: candidate.packageLPA || '0',
+          ...calculatedValues
+        };
+        setCompanyDetails(updatedDetails);
+        setShowDetails(true);
+        onUpdateCompanyDetails(updatedDetails);
       }
     } else if (name === "pan") {
       const updatedValue = value.toUpperCase();
@@ -222,6 +262,75 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
     );
   };
 
+  const renderMonthYearSelectors = () => {
+    const months = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    return (
+      <div className="mb-4">
+        <div className="form-group">
+          <label className="block mb-1 text-sm font-medium text-gray-700">Month</label>
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            {months.map((month, index) => (
+              <option key={month} value={index}>
+                {month}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderAttendanceDetails = () => {
+    const updateAttendance = (value) => {
+      const numberValue = parseInt(value) || 0;
+      const daysInMonth = getDaysInMonth(selectedMonth);
+      
+      // Validate leaves against days in month
+      const validLeaves = Math.min(numberValue, daysInMonth);
+      
+      setAttendance({ leaves: validLeaves });
+      
+      // Recalculate salary with new leaves
+      if (selectedCandidate) {
+        const calculatedValues = calculateSalary(
+          selectedCandidate.packageLPA, 
+          validLeaves,
+          selectedMonth
+        );
+        
+        setCompanyDetails(prev => ({
+          ...prev,
+          ...calculatedValues,
+          payableDays: (daysInMonth - validLeaves).toString()
+        }));
+      }
+    };
+
+    return (
+      <div className="form-group mb-4">
+        <label className="block mb-1 text-sm font-medium text-gray-700">
+          Leaves (Max: {getDaysInMonth(selectedMonth)} days)
+        </label>
+        <input
+          type="number"
+          value={attendance.leaves}
+          onChange={(e) => updateAttendance(e.target.value)}
+          min="0"
+          max={getDaysInMonth(selectedMonth)}
+          className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+    );
+  };
+
   return (
     <div className="">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Enter Payslip Detail</h2>
@@ -257,46 +366,12 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
           ))}
         </select>
       </div>
-
-      {/* {renderInput("empCode", "Employee Code", "text", true)}
-      {renderInput("designation", "Designation", "text", true)}
-      {renderInput("pan", "PAN", "text", true)}
-      {renderInput("location", "Location", "text", true)}
-      {renderInput("doj", "Date of Joining", "text", true)}
-      {renderInput("department", "Department", "text", true)} */}
+      {renderMonthYearSelectors()}
+      {renderAttendanceDetails()}
+    
       {renderInput("payableDays", "Payable Days", "number")}
 
-      {/* {showDetails && (
-        <>
-          <h3 className="text-lg font-semibold mt-6 mb-4">Salary Components</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {renderInput("monthlyCTC", "Monthly CTC", "text", true)}
-            {renderInput("basic", "Basic", "text", true)}
-            {renderInput("hra", "HRA", "text", true)}
-            {renderInput("da", "DA", "text", true)}
-            {renderInput("conveyanceAllowance", "Conveyance Allowance", "text", true)}
-            {renderInput("medicalAllowance", "Medical Allowance", "text", true)}
-            {renderInput("lta", "LTA", "text", true)}
-            {renderInput("specialAllowance", "Special Allowance", "text", true)}
-            {renderInput("gross", "Gross Salary", "text", true)}
-            
-            <h3 className="text-lg font-semibold mt-4 mb-2 col-span-2">Deductions</h3>
-            {renderInput("epfEmployee", "EPF (Employee)", "text", true)}
-            {renderInput("epfEmployer", "EPF (Employer)", "text", true)}
-            {renderInput("esi", "ESI", "text", true)}
-            {renderInput("professionalTax", "Professional Tax", "text", true)}
-            {renderInput("totalDeductions", "Total Deductions", "text", true)}
-            
-            <h3 className="text-lg font-semibold mt-4 mb-2 col-span-2">Net Salary</h3>
-            {renderInput("netPay", "Net Pay", "text", true)}
-            
-            <h3 className="text-lg font-semibold mt-4 mb-2 col-span-2">Annual Components</h3>
-            {renderInput("gratuity", "Gratuity", "text", true)}
-            {renderInput("annualBonus", "Annual Bonus", "text", true)}
-            {renderInput("annualCTC", "Annual CTC", "text", true)}
-          </div>
-        </>
-      )} */}
+   
     </div>
   );
 };

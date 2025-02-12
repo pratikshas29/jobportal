@@ -22,7 +22,9 @@
 
 .App-link {
   color: #61dafb;
+  font-family: 'Calibri', sans-serif; /* Optional: Ensure link text also uses Calibri */
 }
+
 
 @keyframes App-logo-spin {
   from {

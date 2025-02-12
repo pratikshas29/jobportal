@@ -6,6 +6,9 @@ import { Link } from "react-router-dom";
 import "../assets/styles/OfferLetter.css";
 import "../assets/styles/ButtonStyles.css";
 import { db } from "./firebase";
+
+import { toWords } from 'number-to-words';
+
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
 function OfferLetter() {
   const containerRef = React.useRef(null);
@@ -34,12 +37,13 @@ function OfferLetter() {
     const single = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
     const double = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
     const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+  
     const formatTens = (num) => {
       if (num < 10) return single[num];
       if (num < 20) return double[num - 10];
       return tens[Math.floor(num / 10)] + (num % 10 ? " " + single[num % 10] : "");
     };
-    
+  
     if (num === 0) return "Zero";
     const convert = (num) => {
       if (num < 100) return formatTens(num);
@@ -48,7 +52,19 @@ function OfferLetter() {
       if (num < 10000000) return convert(Math.floor(num / 100000)) + " Lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
       return convert(Math.floor(num / 10000000)) + " Crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
     };
-    return convert(num);
+  
+    // Split the number into integer and decimal parts
+    const [integerPart, decimalPart] = num.toString().split('.');
+  
+    // Convert the integer part
+    let words = convert(parseInt(integerPart));
+  
+    // If there's a decimal part, convert it to words
+    if (decimalPart) {
+      words += " Point " + decimalPart.split('').map(digit => single[parseInt(digit)]).join(" ");
+    }
+  
+    return words;
   };
   useEffect(() => {
     fetchCompanies();
@@ -75,36 +91,33 @@ function OfferLetter() {
   const calculateSalaryComponents = (lpa) => {
     const annualSalary = parseFloat(lpa) * 100000;
     
-    // Standard Indian salary structure percentages
-    const basic = Math.round(annualSalary * 0.35); // 35% of CTC
-    const hra = Math.round(basic * 0.4); // 40% of Basic
-    const da = Math.round(annualSalary * 0.30); // 30% of CTC
-    const conveyance = Math.round(annualSalary * 0.20); // 20% of CTC
-    const medical = 15000; // Standard medical allowance
-    const lta = Math.round(basic * 0.1); // 10% of Basic
-    const special = annualSalary - (basic + hra + da + conveyance + medical + lta);
+    // Calculate components based on annual salary
+    const basic = Math.round(annualSalary * 0.35); // 35% of CTC = 131,250 for 3.75L
+    const da = Math.round(annualSalary * 0.30); // 30% of CTC = 112,500 for 3.75L
+    const conveyance = Math.round(annualSalary * 0.20); // 20% of CTC = 75,000 for 3.75L
+    const otherAllowance = Math.round(annualSalary * 0.15); // 15% of CTC = 56,250 for 3.75L
     
     // Monthly calculations
     const monthlyBasic = Math.round(basic / 12);
-    const monthlyHRA = Math.round(hra / 12);
     const monthlyDA = Math.round(da / 12);
     const monthlyConveyance = Math.round(conveyance / 12);
-    const monthlyMedical = Math.round(medical / 12);
-    const monthlyLTA = Math.round(lta / 12);
-    const monthlySpecial = Math.round(special / 12);
-    const monthlyGross = monthlyBasic + monthlyHRA + monthlyDA + monthlyConveyance + monthlyMedical + monthlyLTA + monthlySpecial;
+    const monthlyOtherAllowance = Math.round(otherAllowance / 12);
 
     return {
-      basic: monthlyBasic.toFixed(2),
-      hra: monthlyHRA.toFixed(2),
-      da: monthlyDA.toFixed(2),
-      conveyance: monthlyConveyance.toFixed(2),
-      medical: monthlyMedical.toFixed(2),
-      lta: monthlyLTA.toFixed(2),
-      special: monthlySpecial.toFixed(2),
-      gross: monthlyGross.toFixed(2),
-      annualSalary: annualSalary.toFixed(2),
-      salaryInWords: numberToWords(annualSalary)
+        basic: monthlyBasic.toFixed(2),
+        da: monthlyDA.toFixed(2),
+        conveyance: monthlyConveyance.toFixed(2),
+        medical: monthlyOtherAllowance.toFixed(2), // Using medical field for other allowance
+        annualSalary: annualSalary.toFixed(2),
+        lpa: parseFloat(lpa),
+        salaryInWords: `${numberToWords(parseFloat(lpa))} Lakh`,
+        
+        // Annual values for display
+        annualBasic: basic.toFixed(2),
+        annualDA: da.toFixed(2),
+        annualConveyance: conveyance.toFixed(2),
+        annualOtherAllowance: otherAllowance.toFixed(2),
+        totalAnnual: annualSalary.toFixed(2)
     };
   };
 
@@ -117,12 +130,13 @@ function OfferLetter() {
           ...formData,
           companyName: selectedCompany.name,
           companyAddressLine1: selectedCompany.address,
-         
+         companyColor:selectedCompany.serverColor,
          
           companyEmail: selectedCompany.email,
           companyPhone: selectedCompany.mobile,
           companyWebsite: selectedCompany.website,
           companyLogo:selectedCompany.logo,
+          companypackageLPA:selectedCompany.packageLPA
           // Add any additional fields as needed
         });
       }
@@ -162,7 +176,15 @@ function OfferLetter() {
       }));
     }
   };
-
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(date); // "05 Feb 2025"
+  };
   const handleDownload = async () => {
     if (!containerRef.current) return;
 
@@ -185,6 +207,80 @@ function OfferLetter() {
     pdf.save("offer-letter.pdf");
   };
 
+  const wordToNumber = (word) => {
+    const wordMap = {
+        'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+        'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15, 'sixteen': 16, 'seventeen': 17,
+        'eighteen': 18, 'nineteen': 19, 'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60,
+        'seventy': 70, 'eighty': 80, 'ninety': 90, 'hundred': 100, 'thousand': 1000, 'lakh': 100000,
+        'million': 1000000, 'billion': 1000000000
+    };
+
+    const wordArray = word.toLowerCase().split(' ');
+
+    let total = 0;
+    let currentValue = 0;
+
+    wordArray.forEach(word => {
+        if (wordMap[word] >= 100) {
+            currentValue *= wordMap[word];
+        } else if (wordMap[word] === 1000 || wordMap[word] === 100000 || wordMap[word] === 1000000) {
+            currentValue *= wordMap[word];
+            total += currentValue;
+            currentValue = 0;
+        } else {
+            currentValue += wordMap[word];
+        }
+    });
+
+    total += currentValue; // Add remaining value
+    return total;
+};
+
+const convertSalaryInWordsToNumber = (salaryInWords) => {
+    const words = salaryInWords.toLowerCase().split(' ');
+    
+    let integerPart = [];
+    let decimalPart = [];
+    let foundPoint = false;
+    let hasLakh = false;
+
+    words.forEach(word => {
+        if (word === 'point') {
+            foundPoint = true;
+        } else if (word === 'lakh') {
+            hasLakh = true;
+        } else if (foundPoint) {
+            decimalPart.push(word);
+        } else {
+            integerPart.push(word);
+        }
+    });
+
+    // Convert the integer and decimal parts
+    let integerValue = wordToNumber(integerPart.join(' '));
+    let decimalValue = 0;
+
+    if (decimalPart.length > 0) {
+        let decimalDigits = decimalPart.map(word => wordToNumber(word));
+        decimalValue = decimalDigits.reduce((acc, val, index) => acc + val / Math.pow(10, index + 1), 0);
+    }
+
+    // Apply Lakh multiplier if present
+    let finalSalary = integerValue + decimalValue;
+    if (hasLakh) {
+        finalSalary *= 100000;
+    }
+
+    return Math.round(finalSalary);  // Ensure no floating-point issues
+};
+
+// Example usage:
+const numericSalary = convertSalaryInWordsToNumber(formData.salaryInWords || "0");
+
+console.log("digit salary:", numericSalary);  // Outputs: 450000
+console.log("salary in word:", formData.salaryInWords);
+ // Outputs: "Five Lakh"
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
     <div className="max-w-[210mm] mx-auto">
@@ -262,9 +358,17 @@ function OfferLetter() {
         <div ref={containerRef} style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
           {/* Page 1 - Terms and Conditions */}
           <div className="offer-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
-            <div className="letter-header">
-              <div className="company-info">
-                <h1 className="company-name capitalize">
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
+
+              <div className="company-info ">
+                <h1 className="company-name capitalize" style={{ color: formData.companyColor }}>
                 {formData.companyName}
                 </h1>
                 <p className="company-address capitalize">
@@ -273,6 +377,8 @@ function OfferLetter() {
                   <br />
                   Pune - 411041, (Maharashtra) INDIA. */}
                      {formData.companyAddressLine1}
+                    <p>Phone: {formData.companyPhone} </p>
+                    <p> {formData.companyWebsite}</p>
                 </p>
               </div>
               <img
@@ -284,13 +390,12 @@ function OfferLetter() {
             <h2 className="letter-title">Joining Cum Appointment Letter</h2>
 
             <div className="letter-content">
-              <p className="date">Date: {new Date().toLocaleDateString()}</p>
+              <p className="date">Date: {formatDate(formData.joiningDate)}</p>
               <p className="employee-name capitalize">Dear {formData.employeeName || '[Employee Name]'},</p>
 
-              <p className="letter-paragraph">
-                We pleased in appointing you as {formData.designation} in MyClan
-                Services Pvt. Ltd., at our Office in our organization, effective
-                from {formData.joiningDate} on the following terms and conditions:
+              <p className="letter-paragraph capitalize">
+                We pleased in appointing you as {formData.designation} in {formData.companyName},at our Office in our organization, effective
+                from {formatDate(formData.joiningDate)} on the following terms and conditions:
               </p>
 
               <p className="letter-paragraph">
@@ -325,27 +430,47 @@ function OfferLetter() {
               </p>
 
               <p className="letter-paragraph">
-                Your salary package will be Rs. {formData.salary}/- ({formData.salaryInWords} Rupees Only) and no other allowance is
-                provided in that period.
-              </p>
-            </div>
+  Your salary package will be Rs. {new Intl.NumberFormat().format(numericSalary)}/- ({formData.salaryInWords} Rupees Only) and no other allowance is provided in that period.
+</p>
 
-            <div className="contact-section">
-              <p className="font-semibold capitalize  ">Contact Us:</p>
-              <p>Email – {formData.companyEmail} Contact No – {formData.companyPhone}</p>
-              <p>Website – {formData.companyWebsite}</p>
             </div>
+            <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
+
+
+
+
           </div>
 
           {/* Page 2 - Additional Terms */}
           <div className="offer-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
-            <div className="letter-header">
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
               <div className="company-info">
-                <h1 className="company-name capitalize">
+                <h1 className="company-name capitalize" style={{ color: formData.companyColor }}>
                 {formData.companyName}
                 </h1>
                 <p className="company-address capitalize ">
                 {formData.companyAddressLine1}
+                <p>Phone: {formData.companyPhone} </p>
+                <p> {formData.companyWebsite}</p>
                 </p>
               </div>
               <img
@@ -426,22 +551,39 @@ function OfferLetter() {
               </p>
             </div>
 
-            <div className="contact-section">
-              <p className="font-semibold">Contact Us:</p>
-              <p>Email – {formData.companyEmail} Contact No – {formData.companyPhone}</p>
-              <p>Website – {formData.companyWebsite}</p>
-            </div>
+            <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
           </div>
 
           {/* Page 3 - Salary Structure */}
           <div className="offer-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
-            <div className="letter-header">
+          <div 
+  className="letter-header pb-4 mb-4" 
+  style={{
+    borderBottomColor: formData.companyColor,  // Apply bottom border color
+    borderBottomStyle: "solid",               // Solid line
+    borderBottomWidth: "1px"                  // 1px thickness
+  }}
+>
               <div className="company-info">
-              <h1 className="company-name">
+              <h1 className="company-name capitalize" style={{ color: formData.companyColor }}>
                 {formData.companyName}
                 </h1>
-                <p className="company-address">
+                <p className="company-address capitalize ">
                 {formData.companyAddressLine1}
+                <p>Phone: {formData.companyPhone} </p>
+                <p> {formData.companyWebsite}</p>
                 </p>
               </div>
               <img
@@ -454,7 +596,7 @@ function OfferLetter() {
 
             <div className="letter-content">
               <p className="date">Date: {new Date().toLocaleDateString()}</p>
-              <p className="employee-name">Dear {formData.employeeName || '[Employee Name]'},</p>
+              <p className="employee-name capitalize">Dear {formData.employeeName || '[Employee Name]'},</p>
 
               <p className="letter-paragraph">
                 As per mentioned in the offer letter, here with attaching your
@@ -471,36 +613,26 @@ function OfferLetter() {
                 <div className="space-y-2">
                   <div className="compensation-row">
                     <span>Basic</span>
-                    <span>: {formData.basic}</span>
+                    <span>: ₹{formData.annualBasic || '0.00'}</span>
                   </div>
-                  <div className="compensation-row">
-                    <span>HRA</span>
-                    <span>: {formData.hra}</span>
-                  </div>
+               
                   <div className="compensation-row">
                     <span>Dearness Allowance</span>
-                    <span>: {formData.da}</span>
+                    <span>: ₹{formData.annualDA || '0.00'}</span>
                   </div>
                   <div className="compensation-row">
                     <span>Conveyance Allowance</span>
-                    <span>: {formData.conveyance}</span>
+                    <span>: ₹{formData.annualConveyance || '0.00'}</span>
                   </div>
                   <div className="compensation-row">
-                    <span>Medical Allowance</span>
-                    <span>: {formData.medical}</span>
-                  </div>
-                  <div className="compensation-row">
-                    <span>LTA</span>
-                    <span>: {formData.lta}</span>
-                  </div>
-                  <div className="compensation-row">
-                    <span>Special Allowance</span>
-                    <span>: {formData.special}</span>
+                    <span>Other Allowance</span>
+                    <span>: ₹{formData.annualOtherAllowance || '0.00'}</span>
                   </div>
                   <div className="compensation-row font-bold mt-4 pt-2 border-t">
-                    <span>Annual Total</span>
-                    <span>: {formData.salary}</span>
-                  </div>
+  <span>Annual Total</span>
+  <span>: ₹{new Intl.NumberFormat().format(formData.lpa * 100000)}</span>
+</div>
+
                 </div>
               </div>
 
@@ -514,17 +646,26 @@ function OfferLetter() {
                 <p className="mt-2">Wish you all the best.</p>
               </div>
 
-              <div className="mt-8">
+              <div className="mt-3">
                 <p>Signature</p>
-                <p className="mt-4">HR Manager</p>
+                <p className="mt-4">Head - HR Dept</p>
               </div>
             </div>
 
-            <div className="contact-section">
-              <p className="font-semibold">Contact Us:</p>
-              <p>Email – {formData.companyEmail} Contact No – {formData.companyPhone}</p>
-              <p>Website – {formData.companyWebsite}</p>
-            </div>
+            <div 
+  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+  style={{
+    borderTopColor: formData.companyColor, 
+    borderTopStyle: "solid",
+    borderTopWidth: "1px",
+  }}
+>
+  <p className="m-0">{formData.companyName}</p>
+  <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyWebsite}</p>
+  <p className="m-0">{formData.companyPhone}</p>             
+</div>
+
           </div>
         </div>
       </div>

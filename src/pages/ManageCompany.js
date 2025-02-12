@@ -16,6 +16,7 @@ const ManageCompany = () => {
     logo: "",
     hrName: "",
     hrMobile: "",
+    color:"",
   });
   const [editId, setEditId] = useState(null);
   const [isListView, setIsListView] = useState(true);
@@ -66,6 +67,7 @@ const ManageCompany = () => {
       logo: "",
       hrName: "",
       hrMobile: "",
+      color:"",
     });
     setEditId(null);
     setIsListView(true);
@@ -94,6 +96,7 @@ const ManageCompany = () => {
       logo: "",
       hrName: "",
       hrMobile: "",
+      color:"",
     });
     setEditId(null);
     setIsListView(false);
@@ -259,7 +262,25 @@ const ManageCompany = () => {
               className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-            
+        
+  <label htmlFor="serverColor" className="text-gray-700">Server Color</label>
+  <select
+    name="serverColor"
+    id="serverColor"
+    value={formData.serverColor}
+    onChange={handleChange}
+    className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    required
+  >
+    <option value="">Select a color</option>
+    <option value="red">Red</option>
+    <option value="blue">Blue</option>
+    <option value="green">Green</option>
+    <option value="yellow">Yellow</option>
+    <option value="purple">Purple</option>
+    <option value="pink">Pink</option>
+  </select>
+
             <button
               type="submit"
               className="bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors"

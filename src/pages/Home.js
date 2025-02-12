@@ -25,7 +25,7 @@ function Home() {
           <Link
             key={index}
             to={doc.path}
-            className="block p-8 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-xl shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center text-white"
+            className="block p-8 bg-white border-l-4 border-blue-500 rounded-xl shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center text-gray-800"
           >
             <div className="flex flex-col items-center">
               <div className="mb-4">{doc.icon}</div>

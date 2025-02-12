@@ -14,6 +14,10 @@
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
+    background: white;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .header {
@@ -74,7 +78,7 @@
 
 .company-details {
     flex: 1;
-    text-align: right;
+    text-align: left;
 }
 
 .company-details h2 {
@@ -102,6 +106,8 @@
 /* Salary Details Section */
 .salary-details {
     border: 3px solid #000;
+    margin-bottom: 150px;
+    position: relative;
 }
 
 .salary-header {
@@ -181,18 +187,30 @@
 }
 
 .footer {
-    text-align: center;
-    padding: 8px;
-    background-color: #ecebe0;
+    display: flex;
+    justify-content: center; /* Centers text horizontally */
+    align-items: center; /* Centers text vertically */
+    width: 100%;
+    max-width: 80%;
+    height: 40px; /* Ensures vertical centering */
+    /* background-color: #ecebe0; */
     font-style: italic;
     font-size: 11px;
-    font-weight: bold;
-    color: black;
-    position: absolute;
-    bottom: 20mm;
-    left: 20mm;
-    right: 20mm;
+    font-weight: normal;
+    color: #000000;
+    margin: 0 auto;
+    border: none; /* Removes all borders */
+    text-align: center; /* Ensures text alignment */
 }
+
+.footer p {
+    margin: 0;
+    padding: 0;
+}
+
+
+
+
 
 .download-button {
     display: block;

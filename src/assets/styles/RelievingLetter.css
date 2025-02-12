@@ -63,13 +63,14 @@
     position: absolute;
     bottom: 40px;
     left: 60px;
-    font-size: 11px;
-    line-height: 1.4;
+    right: 60px;
+    text-align: left;
+    /* border-top: 1px solid #000; */
+    padding-top: 20px;
 }
 
-.footer p {
-    margin: 2px 0;
-}
+
+
 
 .non-compete-continuation,
 .further-declaration {
