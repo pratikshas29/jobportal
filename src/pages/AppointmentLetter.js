@@ -636,6 +636,7 @@ function AppointmentLetter() {
 
              
             </div>
+
             <div 
   className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
   style={{
