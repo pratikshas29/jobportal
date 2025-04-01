@@ -3,9 +3,7 @@ import "../components/CompanyDetailsForm.css";
 import { db } from "./firebase";
 import { collection, getDocs } from "firebase/firestore";
 
-
 const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
-  const [showDetails, setShowDetails] = useState(false);
   const [candidates, setCandidates] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -202,7 +200,6 @@ const CompanyDetailsForm = ({ onUpdateCompanyDetails }) => {
           ...calculatedValues
         };
         setCompanyDetails(updatedDetails);
-        setShowDetails(true);
         onUpdateCompanyDetails(updatedDetails);
       }
     } else if (name === "pan") {

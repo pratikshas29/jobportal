@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Download } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -7,7 +7,8 @@ import "../assets/styles/AppointmentLetter.css";
 import "../assets/styles/ButtonStyles.css";
 import { ArrowLeft } from "lucide-react";
 import { db } from "./firebase";
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
+
 function AppointmentLetter() {
   const containerRef = React.useRef(null);
   const [companies, setCompanies] = useState([]);
@@ -647,8 +648,9 @@ function AppointmentLetter() {
 >
   <p className="m-0">{formData.companyName}</p>
   <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyPhone}</p>      
   <p className="m-0">{formData.companyWebsite}</p>
-  <p className="m-0">{formData.companyPhone}</p>             
+       
 </div>
           </div>
 
@@ -765,8 +767,9 @@ function AppointmentLetter() {
 >
   <p className="m-0">{formData.companyName}</p>
   <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyPhone}</p>   
   <p className="m-0">{formData.companyWebsite}</p>
-  <p className="m-0">{formData.companyPhone}</p>             
+          
 </div>
           </div>
 
@@ -875,8 +878,9 @@ function AppointmentLetter() {
 >
   <p className="m-0">{formData.companyName}</p>
   <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyPhone}</p>     
   <p className="m-0">{formData.companyWebsite}</p>
-  <p className="m-0">{formData.companyPhone}</p>             
+        
 </div>
           </div>
 
@@ -988,8 +992,9 @@ function AppointmentLetter() {
 >
   <p className="m-0">{formData.companyName}</p>
   <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyPhone}</p>    
   <p className="m-0">{formData.companyWebsite}</p>
-  <p className="m-0">{formData.companyPhone}</p>             
+         
 </div>
           </div>
 
@@ -1089,8 +1094,9 @@ function AppointmentLetter() {
 >
   <p className="m-0">{formData.companyName}</p>
   <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyPhone}</p>      
   <p className="m-0">{formData.companyWebsite}</p>
-  <p className="m-0">{formData.companyPhone}</p>             
+       
 </div>
           </div>
 
@@ -1181,8 +1187,9 @@ function AppointmentLetter() {
 >
   <p className="m-0">{formData.companyName}</p>
   <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyPhone}</p>     
   <p className="m-0">{formData.companyWebsite}</p>
-  <p className="m-0">{formData.companyPhone}</p>             
+        
 </div>
           </div>
 
@@ -1260,8 +1267,9 @@ function AppointmentLetter() {
 >
   <p className="m-0">{formData.companyName}</p>
   <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyPhone}</p>     
   <p className="m-0">{formData.companyWebsite}</p>
-  <p className="m-0">{formData.companyPhone}</p>             
+        
 </div>
           </div>
          

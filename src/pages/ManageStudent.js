@@ -73,12 +73,6 @@ const ManageStudent = () => {
     fetchCandidates();
   };
 
-  // Format date to MM/DD/YYYY
-  const formatDate = (date) => {
-    const newDate = new Date(date.seconds * 1000);
-    return newDate.toLocaleDateString();
-  };
-
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto">
@@ -97,7 +91,6 @@ const ManageStudent = () => {
                 <div>
                   <p className="text-lg font-semibold capitalize">{candidate.candidateName}</p>
                   <p className="text-gray-600 capitalize">{candidate.designation}</p>
-                  {/* <p className="text-gray-600 capitalize">Joining Date: {candidate.DateOfJoining ? formatDate(candidate.DateOfJoining) : "N/A"}</p> */}
                 </div>
                 <div className="flex space-x-2">
                   <button
@@ -124,7 +117,7 @@ const ManageStudent = () => {
             <h3 className="text-2xl font-semibold mb-4">{editId ? "Edit Candidate" : "Add Candidate"}</h3>
             {Object.keys(formData).map((field) => (
               <div key={field} className="mb-4">
-                <label htmlFor={field} className="block text-gray-700 font-semibold mb-1">
+                <label htmlFor={field} className="block text-gray-700 capitalize font-semibold mb-1">
                   {field.replace(/([A-Z])/g, " $1").trim()}
                 </label>
                 <input

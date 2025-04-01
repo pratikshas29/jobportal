@@ -1,6 +1,5 @@
 import React from "react";
 import html2pdf from "html2pdf.js";
-import logo from "../assets/logo.PNG";
 import "./PaySlip.css";
 import { Download } from "lucide-react";
 const PaySlip = ({ employeeData, companyDetails }) => {

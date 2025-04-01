@@ -1,4 +1,4 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Download } from "lucide-react";
 import jsPDF from "jspdf";
@@ -6,7 +6,8 @@ import html2canvas from "html2canvas";
 import "../assets/styles/ButtonStyles.css";
 import "../assets/styles/RelievingLetter.css";
 import { db } from "./firebase";
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
+
 function RelievingLetter() {
   const containerRef = React.useRef(null);
   const [companies, setCompanies] = useState([]);
@@ -19,6 +20,7 @@ function RelievingLetter() {
     employeeSignDate: "",
     employeeSignPlace: ""
   });
+
   useEffect(() => {
     fetchCompanies();
     fetchCandidates();
@@ -54,9 +56,8 @@ function RelievingLetter() {
           companyPhone: selectedCompany.mobile,
           companyWebsite: selectedCompany.website,
           companyLogo: selectedCompany.logo,
-          companyHR:selectedCompany.hrName,
-          companyColor:selectedCompany.serverColor,
-
+          companyHR: selectedCompany.hrName,
+          companyColor: selectedCompany.serverColor,
         });
       }
     } else if (name === "employeeName") {
@@ -115,117 +116,110 @@ function RelievingLetter() {
       year: "numeric",
     }).format(date); // "05 Feb 2025"
   };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-    <div className="max-w-[210mm] mx-auto">
-    <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
-  <div className="ml-2 md:ml-4">
-    <Link to="/" className="back-link flex items-center text-gray-600 hover:text-gray-900">
-      <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-      <span className="text-sm md:text-base">Back to Home</span>
-    </Link>
-  </div>
-</div>
+      <div className="max-w-[210mm] mx-auto">
+        <div className="flex justify-between items-center mb-6 md:mb-12 mt-4 md:mt-6">
+          <div className="ml-2 md:ml-4">
+            <Link to="/" className="back-link flex items-center text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+              <span className="text-sm md:text-base">Back to Home</span>
+            </Link>
+          </div>
+        </div>
 
-{/* Form Section */}
-<div className="bg-white rounded-lg shadow-lg p-6 md:p-8 mb-8">
-  <h2 className="text-xl md:text-2xl font-semibold mb-6 text-gray-800">Enter Relieving Letter Details</h2>
-  
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div className="form-group">
-      <label className="block mb-1 text-sm font-medium text-gray-700">Employee Name</label>
-      <select
-        name="employeeName"
-        onChange={handleInputChange}
-        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">Select Employee</option>
-        {candidates.map((candidate) => (
-          <option key={candidate.id} value={candidate.candidateName}>
-            {candidate.candidateName}
-          </option>
-        ))}
-      </select>
-    </div>
+        {/* Form Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6 md:p-8 mb-8">
+          <h2 className="text-xl md:text-2xl font-semibold mb-6 text-gray-800">Enter Relieving Letter Details</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="form-group">
+              <label className="block mb-1 text-sm font-medium text-gray-700">Employee Name</label>
+              <select
+                name="employeeName"
+                onChange={handleInputChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select Employee</option>
+                {candidates.map((candidate) => (
+                  <option key={candidate.id} value={candidate.candidateName}>
+                    {candidate.candidateName}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-   
+            <div className="form-group">
+              <label className="block mb-1 text-sm font-medium text-gray-700">Employee Sign Date</label>
+              <input
+                type="date"
+                name="employeeSignDate"
+                value={formData.employeeSignDate}
+                onChange={handleInputChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter signing date"
+              />
+            </div>
 
+            <div className="form-group">
+              <label className="block mb-1 text-sm font-medium text-gray-700">Place of Signing</label>
+              <input
+                type="text"
+                name="employeeSignPlace"
+                value={formData.employeeSignPlace}
+                onChange={handleInputChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter place"
+              />
+            </div>
 
-    <div className="form-group">
-      <label className="block mb-1 text-sm font-medium text-gray-700">Employee Sign Date</label>
-      <input
-        type="date"
-        name="employeeSignDate"
-        value={formData.employeeSignDate}
-        onChange={handleInputChange}
-        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        placeholder="Enter signing date"
-      />
-    </div>
+            <div className="form-group">
+              <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
+              <select
+                name="company"
+                onChange={handleInputChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select Company</option>
+                {companies.map((company) => (
+                  <option key={company.id} value={company.name}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-    <div className="form-group">
-      <label className="block mb-1 text-sm font-medium text-gray-700">Place of Signing</label>
-      <input
-        type="text"
-        name="employeeSignPlace"
-        value={formData.employeeSignPlace}
-        onChange={handleInputChange}
-        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        placeholder="Enter place"
-      />
-    </div>
-
-    <div className="form-group">
-      <label className="block mb-1 text-sm font-medium text-gray-700">Company</label>
-      <select
-        name="company"
-        onChange={handleInputChange}
-        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="">Select Company</option>
-        {companies.map((company) => (
-          <option key={company.id} value={company.name}>
-            {company.name}
-          </option>
-        ))}
-      </select>
-    </div>
-
-   
-  </div>
-
-  <div className="mt-6 flex justify-end">
-    <button
-      onClick={handleDownload}
-      className="download-btn flex items-center px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 shadow-md hover:shadow-lg transition-all duration-200 text-sm md:text-base"
-    >
-      <Download size={18} className="mr-2" />
-      <span>Generate Relieving Letter</span>
-    </button>
-  </div>
-</div>
-
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={handleDownload}
+              className="download-btn flex items-center px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 shadow-md hover:shadow-lg transition-all duration-200 text-sm md:text-base"
+            >
+              <Download size={18} className="mr-2" />
+              <span>Generate Relieving Letter</span>
+            </button>
+          </div>
+        </div>
 
         {/* Hidden PDF Content */}
         <div ref={containerRef} style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
           <div className="relieving-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
-          <div 
-  className="letter-header pb-4 mb-4" 
-  style={{
-    borderBottomColor: formData.companyColor,  // Apply bottom border color
-    borderBottomStyle: "solid",               // Solid line
-    borderBottomWidth: "1px"                  // 1px thickness
-  }}
->
+            <div 
+              className="letter-header pb-4 mb-4" 
+              style={{
+                borderBottomColor: formData.companyColor,
+                borderBottomStyle: "solid",
+                borderBottomWidth: "1px"
+              }}
+            >
               <div>
                 <h1 className="company-name" style={{ color: formData.companyColor }}>{formData.companyName}</h1>
                 <p className="company-address">
                   {formData.companyAddressLine1}
                   <br />
-                  
-                 Phone: {formData.companyPhone}
-                  {/* {formData.companyCity} - {formData.companyPincode}, ({formData.companyState}) INDIA. */}
-                  <br/>
+                  Phone: {formData.companyPhone}
+                  <br />
                   {formData.companyWebsite}
                 </p>
               </div>
@@ -309,43 +303,38 @@ function RelievingLetter() {
                 </p>
               </div>
               <div 
-  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
-  style={{
-    borderTopColor: formData.companyColor, 
-    borderTopStyle: "solid",
-    borderTopWidth: "1px",
-  }}
->
-  <p className="m-0">{formData.companyName}</p>
-  <p className="m-0">{formData.companyAddressLine1}</p>
-  <p className="m-0">{formData.companyWebsite}</p>
-  <p className="m-0">{formData.companyPhone}</p>             
-</div>
-
-
-
+                className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+                style={{
+                  borderTopColor: formData.companyColor, 
+                  borderTopStyle: "solid",
+                  borderTopWidth: "1px",
+                }}
+              >
+                <p className="m-0">{formData.companyName}</p>
+                <p className="m-0">{formData.companyAddressLine1}</p>
+                <p className="m-0">{formData.companyPhone}</p> 
+                <p className="m-0">{formData.companyWebsite}</p>
             
+              </div>
             </div>
           </div>
 
           <div className="relieving-letter-page bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
-          <div 
-  className="letter-header pb-4 mb-4" 
-  style={{
-    borderBottomColor: formData.companyColor,  // Apply bottom border color
-    borderBottomStyle: "solid",               // Solid line
-    borderBottomWidth: "1px"                  // 1px thickness
-  }}
->
+            <div 
+              className="letter-header pb-4 mb-4" 
+              style={{
+                borderBottomColor: formData.companyColor,
+                borderBottomStyle: "solid",
+                borderBottomWidth: "1px"
+              }}
+            >
               <div>
                 <h1 className="company-name" style={{ color: formData.companyColor }}>{formData.companyName}</h1>
                 <p className="company-address">
                   {formData.companyAddressLine1}
                   <br />
-                  
-                 Phone: {formData.companyPhone}
-                  {/* {formData.companyCity} - {formData.companyPincode}, ({formData.companyState}) INDIA. */}
-                  <br/>
+                  Phone: {formData.companyPhone}
+                  <br />
                   {formData.companyWebsite}
                 </p>
               </div>
@@ -386,7 +375,6 @@ function RelievingLetter() {
 
                   <div className="company-sign">
                     <p>{formData.companyName}</p>
-
                     <p className="sign-name capitalize">{formData.companyHR}</p>
                     <p className="designation">Head - HR Dept</p>
                   </div>
@@ -394,23 +382,19 @@ function RelievingLetter() {
               </div>
 
               <div 
-  className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
-  style={{
-    borderTopColor: formData.companyColor, 
-    borderTopStyle: "solid",
-    borderTopWidth: "1px",
-  }}
->
-  <p className="m-0">{formData.companyName}</p>
-  <p className="m-0">{formData.companyAddressLine1}</p>
-  <p className="m-0">{formData.companyWebsite}</p>
-  <p className="m-0">{formData.companyPhone}</p>             
-</div>
-
-
-
-
-
+                className="footer w-full flex flex-col items-start text-left border-t leading-5 pt-2 absolute bottom-10 left-15 right-15"
+                style={{
+                  borderTopColor: formData.companyColor, 
+                  borderTopStyle: "solid",
+                  borderTopWidth: "1px",
+                }}
+              >
+                <p className="m-0">{formData.companyName}</p>
+                <p className="m-0">{formData.companyAddressLine1}</p>
+                <p className="m-0">{formData.companyPhone}</p>
+                <p className="m-0">{formData.companyWebsite}</p>
+             
+              </div>
             </div>
           </div>
         </div>

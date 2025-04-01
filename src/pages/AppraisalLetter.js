@@ -6,7 +6,8 @@ import html2canvas from "html2canvas";
 import "../assets/styles/ButtonStyles.css";
 import "../assets/styles/AppraisalLetter.css";
 import { db } from "./firebase";
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
+
 function AppraisalLetter() {
   const containerRef = React.useRef(null);
   const [companies, setCompanies] = useState([]);
@@ -451,8 +452,9 @@ console.log("salary:", numericSalary);
 >
   <p className="m-0">{formData.companyName}</p>
   <p className="m-0">{formData.companyAddressLine1}</p>
+  <p className="m-0">{formData.companyPhone}</p>          
   <p className="m-0">{formData.companyWebsite}</p>
-  <p className="m-0">{formData.companyPhone}</p>             
+   
 </div>
             </div>
           </div>
